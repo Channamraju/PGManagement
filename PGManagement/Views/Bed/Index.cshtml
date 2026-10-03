@@ -1,0 +1,1121 @@
+﻿@model IEnumerable<PGManagement.Models.Bed>
+
+@{
+    ViewData["Title"] = "Manage Beds";
+
+    var rooms = ViewBag.Rooms
+        as IEnumerable<PGManagement.Models.Room>
+        ?? Enumerable.Empty<PGManagement.Models.Room>();
+
+    int? selectedRoomId = ViewBag.SelectedRoomId;
+
+    var beds = Model?.ToList()
+        ?? new List<PGManagement.Models.Bed>();
+
+    var totalBeds = beds.Count;
+
+    var availableBeds = beds.Count(x =>
+        x.Status == "Available");
+
+    var occupiedBeds = beds.Count(x =>
+        x.Status == "Occupied");
+
+    var occupancyPercentage = totalBeds > 0
+        ? occupiedBeds * 100 / totalBeds
+        : 0;
+
+    var selectedRoom = rooms.FirstOrDefault(
+        x => x.RoomId == selectedRoomId);
+}
+
+<div class="container py-4">
+
+    <!-- ========================================================= -->
+    <!-- HEADER -->
+    <!-- ========================================================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div class="page-title">
+
+            <div class="page-icon">
+
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+
+            </div>
+
+            <div>
+
+                <h2 class="fw-bold mb-1">
+                    Manage Beds
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Manage bed availability and occupancy
+                    in your rooms.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <a asp-controller="Owner"
+           asp-action="Dashboard"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+            Dashboard
+
+        </a>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- ALERTS -->
+    <!-- ========================================================= -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm">
+
+            <i class="bi bi-check-circle-fill me-2"></i>
+
+            @TempData["Success"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm">
+
+            <i class="bi bi-exclamation-circle-fill me-2"></i>
+
+            @TempData["Error"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    <!-- ========================================================= -->
+    <!-- ROOM SELECTOR -->
+    <!-- ========================================================= -->
+
+    <div class="card border-0 shadow-sm room-selector mb-4">
+
+        <div class="card-body p-4">
+
+            <div class="selector-heading mb-3">
+
+                <div class="selector-icon">
+
+                    <i class="bi bi-door-open-fill"></i>
+
+                </div>
+
+                <div>
+
+                    <h5 class="fw-bold mb-1">
+                        Select Room
+                    </h5>
+
+                    <small class="text-muted">
+                        Choose a room to view and manage its beds.
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <form asp-controller="Bed"
+                  asp-action="Index"
+                  method="get">
+
+                <div class="row g-3 align-items-end">
+
+                    <div class="col-lg-9">
+
+                        <label class="form-label fw-semibold">
+
+                            Room
+
+                        </label>
+
+
+                        <select name="roomId"
+                                class="form-select form-select-lg">
+
+                            <option value="">
+                                -- Select Room --
+                            </option>
+
+
+                            @foreach (var room in rooms)
+                            {
+                                if (selectedRoomId == room.RoomId)
+                                {
+                                    <option value="@room.RoomId"
+                                            selected>
+
+                                        @room.PG?.PGName
+                                        -
+                                        Room @room.RoomNumber
+                                        -
+                                        @room.SharingType
+                                        -
+                                        Capacity @room.Capacity
+
+                                    </option>
+                                }
+                                else
+                                {
+                                    <option value="@room.RoomId">
+
+                                        @room.PG?.PGName
+                                        -
+                                        Room @room.RoomNumber
+                                        -
+                                        @room.SharingType
+                                        -
+                                        Capacity @room.Capacity
+
+                                    </option>
+                                }
+                            }
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="col-lg-3">
+
+                        <button type="submit"
+                                class="btn btn-primary btn-lg w-100">
+
+                            <i class="bi bi-search"></i>
+
+                            View Beds
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- SELECTED ROOM INFORMATION -->
+    <!-- ========================================================= -->
+    @if (selectedRoomId.HasValue && selectedRoom != null)
+    {
+        <div class="selected-room-card mb-4">
+
+            <div class="selected-room-left">
+
+                <div class="room-icon">
+
+                    <i class="bi bi-door-open-fill"></i>
+
+                </div>
+
+
+                <div>
+
+                    <h4 class="fw-bold mb-1">
+
+                        Room @selectedRoom.RoomNumber
+
+                    </h4>
+
+                    <div class="text-muted">
+
+                        <i class="bi bi-buildings"></i>
+
+                        @selectedRoom.PG?.PGName
+
+                        @if (!string.IsNullOrWhiteSpace(
+                            selectedRoom.PG?.City))
+                        {
+                            <span>
+                                · @selectedRoom.PG.City
+                            </span>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="selected-room-actions">
+
+                <a asp-controller="Room"
+                   asp-action="Details"
+                   asp-route-id="@selectedRoom.RoomId"
+                   class="btn btn-outline-primary">
+
+                    <i class="bi bi-eye"></i>
+
+                    Room Details
+
+                </a>
+
+
+                <a asp-controller="Bed"
+                   asp-action="Create"
+                   asp-route-roomId="@selectedRoom.RoomId"
+                   class="btn btn-primary">
+
+                    <i class="bi bi-plus-lg"></i>
+
+                    Add Bed
+
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- ===================================================== -->
+        <!-- BED SUMMARY -->
+        <!-- ===================================================== -->
+
+        <div class="row g-3 mb-4">
+
+
+            <!-- Total -->
+
+            <div class="col-md-4">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon total">
+
+                        <i class="bi bi-grid-3x3-gap-fill"></i>
+
+                    </div>
+
+                    <div>
+
+                        <small>Total Beds</small>
+
+                        <h3>
+                            @totalBeds
+                        </h3>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Available -->
+
+            <div class="col-md-4">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon available">
+
+                        <i class="bi bi-check-circle-fill"></i>
+
+                    </div>
+
+                    <div>
+
+                        <small>Available</small>
+
+                        <h3>
+                            @availableBeds
+                        </h3>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Occupied -->
+
+            <div class="col-md-4">
+
+                <div class="stat-card">
+
+                    <div class="stat-icon occupied">
+
+                        <i class="bi bi-person-fill"></i>
+
+                    </div>
+
+                    <div>
+
+                        <small>Occupied</small>
+
+                        <h3>
+                            @occupiedBeds
+                        </h3>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ===================================================== -->
+        <!-- OCCUPANCY -->
+        <!-- ===================================================== -->
+
+        <div class="card border-0 shadow-sm mb-4">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between
+                    align-items-center mb-2">
+
+                    <div>
+
+                        <strong>
+                            Bed Occupancy
+                        </strong>
+
+                        <div class="text-muted small">
+                            @occupiedBeds of @totalBeds beds occupied
+                        </div>
+
+                    </div>
+
+
+                    <strong>
+                        @occupancyPercentage%
+                    </strong>
+
+                </div>
+
+
+                <div class="progress"
+                     style="height: 10px;">
+
+                    <div class="progress-bar"
+                         role="progressbar"
+                         style="width: @occupancyPercentage%;"
+                         aria-valuenow="@occupancyPercentage"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ===================================================== -->
+        <!-- BED LIST -->
+        <!-- ===================================================== -->
+
+        <div class="d-flex justify-content-between
+            align-items-center mb-3">
+
+            <div>
+
+                <h4 class="fw-bold mb-1">
+                    Beds
+                </h4>
+
+                <p class="text-muted mb-0">
+                    Current status of all beds in this room.
+                </p>
+
+            </div>
+
+
+            <a asp-controller="Bed"
+               asp-action="Create"
+               asp-route-roomId="@selectedRoomId"
+               class="btn btn-success">
+
+                <i class="bi bi-plus-lg"></i>
+
+                Add Bed
+
+            </a>
+
+        </div>
+
+
+        @if (!beds.Any())
+        {
+            <!-- ================================================= -->
+            <!-- NO BEDS -->
+            <!-- ================================================= -->
+
+            <div class="empty-card">
+
+                <div class="empty-icon">
+
+                    <i class="bi bi-bed"></i>
+
+                </div>
+
+
+                <h4 class="fw-bold">
+                    No Beds Found
+                </h4>
+
+
+                <p class="text-muted">
+
+                    This room doesn't have any beds yet.
+
+                </p>
+
+
+                @if (selectedRoom != null &&
+                     selectedRoom.Capacity > 0)
+                {
+                    <a asp-controller="Bed"
+                       asp-action="Create"
+                       asp-route-roomId="@selectedRoom.RoomId"
+                       class="btn btn-primary">
+
+                        <i class="bi bi-plus-lg"></i>
+
+                        Add First Bed
+
+                    </a>
+                }
+
+            </div>
+        }
+        else
+        {
+            <div class="row g-3">
+
+                @foreach (var bed in beds)
+                {
+                    var isOccupied =
+                        bed.Status == "Occupied";
+
+
+                    <div class="col-md-6 col-xl-4">
+
+                        <div class="bed-card
+                            @(isOccupied
+                                ? "occupied"
+                                : "available")">
+
+
+                            <!-- Card Top -->
+
+                            <div class="bed-card-top">
+
+                                <div class="bed-icon">
+
+                                    <i class="bi bi-bed-fill"></i>
+
+                                </div>
+
+
+                                @if (isOccupied)
+                                {
+                                    <span class="status-badge occupied">
+
+                                        <i class="bi bi-person-fill"></i>
+
+                                        Occupied
+
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge available">
+
+                                        <i class="bi bi-check-circle-fill"></i>
+
+                                        Available
+
+                                    </span>
+                                }
+
+                            </div>
+
+
+                            <!-- Bed Name -->
+
+                            <div class="bed-number">
+
+                                @bed.BedNumber
+
+                            </div>
+
+
+                            <div class="bed-room">
+
+                                <i class="bi bi-door-open"></i>
+
+                                Room @bed.Room?.RoomNumber
+
+                            </div>
+
+
+                            <!-- ================================================= -->
+                            <!-- OCCUPIED -->
+                            <!-- ================================================= -->
+                            @if (isOccupied)
+                            {
+                                <div class="occupied-info">
+
+                                    <div class="occupied-title">
+
+                                        <i class="bi bi-person-fill"></i>
+
+                                        Currently Occupied
+
+                                    </div>
+
+                                    <small>
+
+                                        This bed is assigned to a tenant.
+
+                                    </small>
+
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="available-info">
+
+                                    <i class="bi bi-check-circle-fill"></i>
+
+                                    Ready for booking
+
+                                </div>
+                            }
+
+
+                            <!-- ================================================= -->
+                            <!-- ACTION -->
+                            <!-- ================================================= -->
+
+                            <div class="bed-card-footer">
+
+                                @if (!isOccupied)
+                                {
+                                    <form asp-controller="Bed"
+                                          asp-action="Delete"
+                                          asp-route-id="@bed.BedId"
+                                          method="post"
+                                          class="w-100"
+                                          onsubmit="return confirm('Are you sure you want to delete bed @bed.BedNumber?');">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="btn btn-outline-danger w-100">
+
+                                            <i class="bi bi-trash"></i>
+
+                                            Delete Bed
+
+                                        </button>
+
+                                    </form>
+                                }
+                                else
+                                {
+                                    <button type="button"
+                                            class="btn btn-light w-100"
+                                            disabled>
+
+                                        <i class="bi bi-lock-fill"></i>
+
+                                        Bed In Use
+
+                                    </button>
+                                }
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+        }
+
+    }
+    else
+    {
+        <!-- ========================================================= -->
+        <!-- NO ROOM SELECTED -->
+        <!-- ========================================================= -->
+
+        <div class="empty-card">
+
+            <div class="empty-icon">
+
+                <i class="bi bi-door-open"></i>
+
+            </div>
+
+
+            <h4 class="fw-bold">
+                Select a Room
+            </h4>
+
+
+            <p class="text-muted">
+
+                Select a room above to view and manage
+                its beds.
+
+            </p>
+
+        </div>
+    }
+
+</div>
+
+
+<style>
+
+    /* ========================================================= */
+    /* PAGE HEADER */
+    /* ========================================================= */
+
+    .page-title {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+
+    .page-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 15px;
+        background: #e7f1ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+    }
+
+
+    /* ========================================================= */
+    /* ROOM SELECTOR */
+    /* ========================================================= */
+
+    .room-selector {
+        border-radius: 18px;
+        background: white;
+    }
+
+
+    .selector-heading {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+
+    .selector-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 11px;
+        background: #e7f1ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+    /* ========================================================= */
+    /* SELECTED ROOM */
+    /* ========================================================= */
+
+    .selected-room-card {
+        padding: 20px;
+        background: linear-gradient( 135deg, #f5f9ff, #ffffff );
+        border: 1px solid #e1eaff;
+        border-radius: 17px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+
+    .selected-room-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+
+    .room-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 14px;
+        background: #e7f1ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+
+    .selected-room-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+
+    /* ========================================================= */
+    /* STATS */
+    /* ========================================================= */
+
+    .stat-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 3px 15px rgba(0,0,0,.06);
+        height: 100%;
+    }
+
+
+        .stat-card small {
+            color: #6c757d;
+            display: block;
+        }
+
+
+        .stat-card h3 {
+            margin: 2px 0 0;
+            font-weight: 700;
+        }
+
+
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+
+
+        .stat-icon.total {
+            background: #e7f1ff;
+            color: #0d6efd;
+        }
+
+
+        .stat-icon.available {
+            background: #e8f7ee;
+            color: #198754;
+        }
+
+
+        .stat-icon.occupied {
+            background: #fff0f0;
+            color: #dc3545;
+        }
+
+
+    /* ========================================================= */
+    /* PROGRESS */
+    /* ========================================================= */
+
+    .progress {
+        background: #e9ecef;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+
+    .progress-bar {
+        border-radius: 20px;
+    }
+
+
+    /* ========================================================= */
+    /* BED CARD */
+    /* ========================================================= */
+
+    .bed-card {
+        background: white;
+        border-radius: 17px;
+        padding: 18px;
+        border: 1px solid;
+        box-shadow: 0 4px 16px rgba(0,0,0,.05);
+        transition: .2s;
+    }
+
+
+        .bed-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 9px 25px rgba(0,0,0,.09);
+        }
+
+
+        .bed-card.available {
+            border-color: #d9f0e2;
+        }
+
+
+        .bed-card.occupied {
+            border-color: #ffd7d7;
+        }
+
+
+    .bed-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 14px;
+    }
+
+
+    .bed-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: #f1f3f5;
+        color: #495057;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+    }
+
+
+    /* ========================================================= */
+    /* STATUS */
+    /* ========================================================= */
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+
+        .status-badge.available {
+            background: #e8f7ee;
+            color: #198754;
+        }
+
+
+        .status-badge.occupied {
+            background: #fff0f0;
+            color: #dc3545;
+        }
+
+
+    /* ========================================================= */
+    /* BED TEXT */
+    /* ========================================================= */
+
+    .bed-number {
+        font-size: 19px;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 4px;
+    }
+
+
+    .bed-room {
+        color: #6c757d;
+        font-size: 12px;
+        margin-bottom: 16px;
+    }
+
+
+    /* ========================================================= */
+    /* OCCUPIED INFO */
+    /* ========================================================= */
+
+    .occupied-info {
+        padding: 12px;
+        border-radius: 10px;
+        background: #fff7f7;
+        margin-bottom: 15px;
+    }
+
+
+    .occupied-title {
+        color: #dc3545;
+        font-weight: 600;
+        font-size: 12px;
+        margin-bottom: 3px;
+    }
+
+
+    .occupied-info small {
+        color: #6c757d;
+        font-size: 11px;
+    }
+
+
+    /* ========================================================= */
+    /* AVAILABLE INFO */
+    /* ========================================================= */
+
+    .available-info {
+        padding: 12px;
+        border-radius: 10px;
+        background: #f4fbf7;
+        color: #198754;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+
+    /* ========================================================= */
+    /* FOOTER */
+    /* ========================================================= */
+
+    .bed-card-footer {
+        border-top: 1px solid #eeeeee;
+        padding-top: 13px;
+    }
+
+
+        .bed-card-footer .btn {
+            border-radius: 9px;
+            font-size: 12px;
+        }
+
+
+    /* ========================================================= */
+    /* EMPTY */
+    /* ========================================================= */
+
+    .empty-card {
+        background: white;
+        border-radius: 18px;
+        padding: 65px 20px;
+        text-align: center;
+        box-shadow: 0 4px 18px rgba(0,0,0,.05);
+    }
+
+
+    .empty-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 18px;
+        border-radius: 21px;
+        background: #f1f3f5;
+        color: #adb5bd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 37px;
+    }
+
+
+    /* ========================================================= */
+    /* MOBILE */
+    /* ========================================================= */
+
+    @@media (max-width: 768px) {
+
+        .selected-room-card {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+
+        .selected-room-actions {
+            width: 100%;
+        }
+
+
+            .selected-room-actions .btn {
+                flex: 1;
+            }
+
+
+        .page-title {
+            align-items: flex-start;
+        }
+
+
+        .container > .d-flex:first-child {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 15px;
+        }
+    }
+
+
+    @@media (max-width: 576px) {
+
+        .page-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+        }
+
+
+        .page-title h2 {
+            font-size: 22px;
+        }
+
+
+        .selected-room-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+
+
+            .selected-room-actions .btn {
+                width: 100%;
+            }
+    }
+
+</style>

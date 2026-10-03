@@ -1,0 +1,1506 @@
+﻿@model IEnumerable<PGManagement.Models.Booking>
+
+@{
+    ViewData["Title"] = "Tenants";
+
+    int totalTenants = Model.Count();
+
+    int pendingTenants =
+        Model.Count(x => x.Status == "Pending");
+
+    int confirmedTenants =
+        Model.Count(x => x.Status == "Confirmed");
+
+    int completedTenants =
+        Model.Count(x => x.Status == "Completed");
+
+    int cancelledTenants =
+        Model.Count(x => x.Status == "Cancelled");
+
+    decimal totalPaid = Model
+        .SelectMany(x => x.Payments ?? Enumerable.Empty<PGManagement.Models.Payment>())
+        .Where(x => x.Status == "Success")
+        .Sum(x => x.Amount);
+}
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+
+    body {
+        background: #f5f7fb;
+    }
+
+    /* =========================
+           HEADER
+        ========================= */
+
+    .tenant-header {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        border-radius: 22px;
+        padding: 30px;
+        margin-top: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 12px 30px rgba(79, 70, 229, .18);
+    }
+
+        .tenant-header h2 {
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .tenant-header p {
+            margin: 7px 0 0;
+            opacity: .85;
+        }
+
+    /* =========================
+           DASHBOARD BUTTON
+        ========================= */
+
+    .dashboard-btn {
+        background: white;
+        color: #4f46e5;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        transition: .2s;
+    }
+
+        .dashboard-btn:hover {
+            background: #f8fafc;
+            color: #4338ca;
+            transform: translateY(-2px);
+        }
+
+    /* =========================
+           ALERTS
+        ========================= */
+
+    .alert {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,.04);
+    }
+
+    /* =========================
+           STAT CARDS
+        ========================= */
+
+    .stat-card {
+        background: white;
+        border-radius: 18px;
+        padding: 22px;
+        border: none;
+        box-shadow: 0 5px 20px rgba(0,0,0,.05);
+        height: 100%;
+        transition: .2s;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,.08);
+        }
+
+    .stat-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 23px;
+        margin-bottom: 13px;
+    }
+
+    .purple {
+        background: #ede9fe;
+        color: #7c3aed;
+    }
+
+    .orange {
+        background: #ffedd5;
+        color: #ea580c;
+    }
+
+    .green {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .blue {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+
+    .red {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .stat-number {
+        font-size: 27px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .stat-label {
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    /* =========================
+           PAYMENT SUMMARY
+        ========================= */
+
+    .payment-summary {
+        background: white;
+        border-radius: 18px;
+        padding: 22px;
+        box-shadow: 0 5px 20px rgba(0,0,0,.05);
+        height: 100%;
+    }
+
+    .payment-summary-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #dcfce7;
+        color: #16a34a;
+        font-size: 22px;
+        margin-bottom: 10px;
+    }
+
+    .payment-summary-label {
+        color: #64748b;
+        font-size: 13px;
+    }
+
+    .payment-summary-value {
+        color: #15803d;
+        font-size: 25px;
+        font-weight: 800;
+    }
+
+    /* =========================
+           TENANT CONTAINER
+        ========================= */
+
+    .tenant-container {
+        background: white;
+        border-radius: 20px;
+        padding: 25px;
+        box-shadow: 0 5px 20px rgba(0,0,0,.05);
+    }
+
+    .tenant-title {
+        font-weight: 700;
+        color: #111827;
+    }
+
+    /* =========================
+           SEARCH
+        ========================= */
+
+    .search-box {
+        position: relative;
+        width: 320px;
+    }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #94a3b8;
+            z-index: 2;
+        }
+
+        .search-box input {
+            height: 42px;
+            padding-left: 42px;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+            .search-box input:focus {
+                border-color: #6366f1;
+                box-shadow: 0 0 0 3px rgba(99,102,241,.1);
+            }
+
+    /* =========================
+           TABLE
+        ========================= */
+
+    .tenant-table {
+        margin-top: 22px;
+        min-width: 1450px;
+    }
+
+        .tenant-table thead {
+            background: #f8fafc;
+        }
+
+        .tenant-table th {
+            border: none;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 15px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .tenant-table td {
+            padding: 16px 15px;
+            vertical-align: middle;
+            border-color: #f1f5f9;
+            white-space: nowrap;
+        }
+
+        .tenant-table tbody tr {
+            transition: .15s;
+        }
+
+            .tenant-table tbody tr:hover {
+                background: #fafbff;
+            }
+
+    /* =========================
+           TENANT PROFILE
+        ========================= */
+
+    .tenant-profile {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 220px;
+    }
+
+    .tenant-avatar {
+        width: 45px;
+        height: 45px;
+        min-width: 45px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 17px;
+        font-weight: 700;
+        flex-shrink: 0;
+    }
+
+    .tenant-name {
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .tenant-email {
+        color: #64748b;
+        font-size: 12px;
+        margin-top: 2px;
+    }
+
+    /* =========================
+           INFO BADGES
+        ========================= */
+
+    .info-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #f1f5f9;
+        color: #334155;
+        padding: 7px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    /* =========================
+           STAY TYPE
+        ========================= */
+
+    .stay-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .monthly-badge {
+        background: #ede9fe;
+        color: #7c3aed;
+    }
+
+    .daily-badge {
+        background: #fff7ed;
+        color: #ea580c;
+    }
+
+    /* =========================
+           STATUS
+        ========================= */
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-pending {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .status-confirmed {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    .status-completed {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .status-cancelled {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    /* =========================
+           PAYMENT
+        ========================= */
+
+    .payment-success {
+        color: #16a34a;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .payment-pending {
+        color: #ea580c;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .payment-none {
+        color: #94a3b8;
+        font-size: 12px;
+    }
+
+    .payment-count {
+        background: #eef2ff;
+        color: #4f46e5;
+        padding: 5px 9px;
+        border-radius: 15px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    /* =========================
+           ACTION BUTTONS
+        ========================= */
+
+    .action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        text-decoration: none;
+        margin-right: 4px;
+        transition: .15s;
+        cursor: pointer;
+    }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+    .view-btn {
+        background: #eef2ff;
+        color: #4f46e5;
+    }
+
+        .view-btn:hover {
+            background: #4f46e5;
+            color: white;
+        }
+
+    .approve-btn {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+        .approve-btn:hover {
+            background: #16a34a;
+            color: white;
+        }
+
+    .reject-btn {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+        .reject-btn:hover {
+            background: #dc2626;
+            color: white;
+        }
+
+    .checkout-btn {
+        background: #fff7ed;
+        color: #ea580c;
+    }
+
+        .checkout-btn:hover {
+            background: #ea580c;
+            color: white;
+        }
+
+    /* =========================
+           EMPTY STATE
+        ========================= */
+
+    .empty-state {
+        text-align: center;
+        padding: 75px 20px;
+    }
+
+    .empty-icon {
+        width: 90px;
+        height: 90px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        margin: 0 auto 20px;
+    }
+
+    .empty-state h5 {
+        font-weight: 700;
+        color: #334155;
+    }
+
+    .empty-state p {
+        color: #64748b;
+    }
+
+    /* =========================
+           TABLE WRAPPER
+        ========================= */
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+    }
+
+        .table-wrapper::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 10px;
+        }
+
+        .table-wrapper::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+    /* =========================
+           MOBILE
+        ========================= */
+
+    @@media (max-width: 768px) {
+
+        .tenant-header {
+            padding: 22px;
+            border-radius: 16px;
+        }
+
+            .tenant-header h2 {
+                font-size: 24px;
+            }
+
+        .tenant-container {
+            padding: 15px;
+            border-radius: 16px;
+        }
+
+        .search-box {
+            width: 100%;
+        }
+
+        .tenant-table {
+            min-width: 1450px;
+        }
+
+        .dashboard-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @@media (max-width: 576px) {
+
+        .tenant-header {
+            margin-top: 15px;
+            padding: 20px;
+        }
+
+        .stat-card {
+            padding: 18px;
+        }
+
+        .stat-number {
+            font-size: 24px;
+        }
+
+        .tenant-container {
+            padding: 12px;
+        }
+    }
+
+</style>
+
+
+<div class="container mb-5">
+
+    <!-- =====================================================
+         HEADER
+    ====================================================== -->
+
+    <div class="tenant-header">
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+            <div>
+
+                <h2>
+
+                    <i class="bi bi-people-fill me-2"></i>
+
+                    Tenants
+
+                </h2>
+
+                <p>
+                    Manage tenants, bookings, payments and room occupancy
+                </p>
+
+            </div>
+
+
+            <a asp-controller="Owner"
+               asp-action="Dashboard"
+               class="dashboard-btn">
+
+                <i class="bi bi-arrow-left me-1"></i>
+
+                Dashboard
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         SUCCESS MESSAGE
+    ====================================================== -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show"
+             role="alert">
+
+            <i class="bi bi-check-circle-fill me-2"></i>
+
+            @TempData["Success"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    <!-- =====================================================
+         ERROR MESSAGE
+    ====================================================== -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show"
+             role="alert">
+
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+            @TempData["Error"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    <!-- =====================================================
+         STATISTICS
+    ====================================================== -->
+
+    <div class="row g-4 mb-4">
+
+        <!-- TOTAL -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card">
+
+                <div class="stat-icon purple">
+
+                    <i class="bi bi-people-fill"></i>
+
+                </div>
+
+                <div class="stat-number">
+
+                    @totalTenants
+
+                </div>
+
+                <div class="stat-label">
+
+                    Total Tenants
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PENDING -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card">
+
+                <div class="stat-icon orange">
+
+                    <i class="bi bi-hourglass-split"></i>
+
+                </div>
+
+                <div class="stat-number">
+
+                    @pendingTenants
+
+                </div>
+
+                <div class="stat-label">
+
+                    Pending Bookings
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CONFIRMED -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card">
+
+                <div class="stat-icon green">
+
+                    <i class="bi bi-person-check-fill"></i>
+
+                </div>
+
+                <div class="stat-number">
+
+                    @confirmedTenants
+
+                </div>
+
+                <div class="stat-label">
+
+                    Active Tenants
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- COMPLETED -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card">
+
+                <div class="stat-icon blue">
+
+                    <i class="bi bi-person-check"></i>
+
+                </div>
+
+                <div class="stat-number">
+
+                    @completedTenants
+
+                </div>
+
+                <div class="stat-label">
+
+                    Completed Stays
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         PAYMENT SUMMARY
+    ====================================================== -->
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-6">
+
+            <div class="payment-summary">
+
+                <div class="payment-summary-icon">
+
+                    <i class="bi bi-cash-stack"></i>
+
+                </div>
+
+                <div class="payment-summary-label">
+
+                    Total Successful Payments
+
+                </div>
+
+                <div class="payment-summary-value">
+
+                    ₹@totalPaid.ToString("N2")
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="col-md-6">
+
+            <div class="payment-summary">
+
+                <div class="payment-summary-icon">
+
+                    <i class="bi bi-credit-card-fill"></i>
+
+                </div>
+
+                <div class="payment-summary-label">
+
+                    Payment Records
+
+                </div>
+
+                <div class="payment-summary-value">
+
+                    @Model.Sum(x =>
+                        (x.Payments ?? Enumerable.Empty<PGManagement.Models.Payment>())
+                        .Count(p => p.Status == "Success"))
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         TENANT LIST
+    ====================================================== -->
+
+    <div class="tenant-container">
+
+
+        <!-- TITLE + SEARCH -->
+
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+            <div>
+
+                <h5 class="tenant-title mb-1">
+
+                    <i class="bi bi-list-ul me-2"></i>
+
+                    Tenant List
+
+                </h5>
+
+                <small class="text-muted">
+
+                    Manage all bookings from your PG properties
+
+                </small>
+
+            </div>
+
+
+            <div class="search-box">
+
+                <i class="bi bi-search"></i>
+
+                <input type="text"
+                       id="tenantSearch"
+                       class="form-control"
+                       placeholder="Search tenant, PG, room..." />
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             TABLE
+        ================================================== -->
+        @if (Model.Any())
+        {
+
+            <div class="table-wrapper">
+
+                <table class="table tenant-table"
+                       id="tenantTable">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Tenant</th>
+
+                            <th>Phone</th>
+
+                            <th>PG</th>
+
+                            <th>Room</th>
+
+                            <th>Bed</th>
+
+                            <th>Stay</th>
+
+                            <th>Rent</th>
+
+                            <th>Booking Date</th>
+
+                            <th>Payment</th>
+
+                            <th>Status</th>
+
+                            <th>Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @foreach (var tenant in Model)
+                        {
+
+                            string tenantName =
+                                tenant.User?.FullName ?? "Unknown Tenant";
+
+                            string tenantEmail =
+                                tenant.User?.Email ?? "-";
+
+                            string tenantPhone =
+                                tenant.User?.Phone ?? "-";
+
+                            string pgName =
+                                tenant.PG?.PGName ?? "-";
+
+                            string roomNumber =
+                                tenant.Room?.RoomNumber ?? "-";
+
+                            string bedNumber =
+                                tenant.Bed?.BedNumber ?? "-";
+
+                            string initial = "?";
+
+
+                            if (!string.IsNullOrWhiteSpace(tenantName) &&
+                                tenantName != "Unknown Tenant")
+                            {
+                                initial = tenantName
+                                    .Trim()
+                                    .Substring(0, 1)
+                                    .ToUpper();
+                            }
+
+
+                            var successfulPayments = tenant.Payments?
+                                .Where(p => p.Status == "Success")
+                                .OrderByDescending(p => p.PaymentDate)
+                                .ToList()
+                                ?? new List<PGManagement.Models.Payment>();
+
+
+                            var latestPayment =
+                                successfulPayments.FirstOrDefault();
+
+
+                            decimal tenantTotalPaid =
+                                successfulPayments.Sum(p => p.Amount);
+
+
+                            <tr>
+
+                                <!-- ================= TENANT ================= -->
+
+                                <td>
+
+                                    <div class="tenant-profile">
+
+                                        <div class="tenant-avatar">
+
+                                            @if (initial != "?")
+                                            {
+                                                @initial
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-person-fill"></i>
+                                            }
+
+                                        </div>
+
+
+                                        <div>
+
+                                            <div class="tenant-name">
+
+                                                @tenantName
+
+                                            </div>
+
+                                            <div class="tenant-email">
+
+                                                @tenantEmail
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ================= PHONE ================= -->
+
+                                <td>
+
+                                    <i class="bi bi-telephone me-1 text-muted"></i>
+
+                                    @tenantPhone
+
+                                </td>
+
+
+                                <!-- ================= PG ================= -->
+
+                                <td>
+
+                                    <strong>
+                                        @pgName
+                                    </strong>
+
+                                </td>
+
+
+                                <!-- ================= ROOM ================= -->
+
+                                <td>
+
+                                    <span class="info-badge">
+
+                                        <i class="bi bi-door-open-fill"></i>
+
+                                        @roomNumber
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- ================= BED ================= -->
+
+                                <td>
+
+                                    <span class="info-badge">
+
+                                        <i class="bi bi-bed-fill"></i>
+
+                                        @bedNumber
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- ================= STAY ================= -->
+
+                                <td>
+
+                                    @if (tenant.StayType == "Daily")
+                                    {
+
+                                        <span class="stay-badge daily-badge">
+
+                                            <i class="bi bi-calendar-day"></i>
+
+                                            Daily
+
+                                        </span>
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="stay-badge monthly-badge">
+
+                                            <i class="bi bi-calendar-month"></i>
+
+                                            Monthly
+
+                                        </span>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- ================= RENT ================= -->
+
+                                <td>
+
+                                    @if (tenant.Room != null)
+                                    {
+
+                                        @if (tenant.StayType == "Daily")
+                                        {
+
+                                            <strong>
+
+                                                ₹@tenant.Room.DailyRent.ToString("N0")
+
+                                            </strong>
+
+                                            <small class="text-muted">
+
+                                                /day
+
+                                            </small>
+
+                                        }
+                                        else
+                                        {
+
+                                            <strong>
+
+                                                ₹@tenant.Room.MonthlyRent.ToString("N0")
+
+                                            </strong>
+
+                                            <small class="text-muted">
+
+                                                /month
+
+                                            </small>
+
+                                        }
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="text-muted">
+                                            -
+                                        </span>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- ================= BOOKING DATE ================= -->
+
+                                <td>
+
+                                    <i class="bi bi-calendar3 me-1 text-muted"></i>
+
+                                    @tenant.BookingDate.ToString("dd MMM yyyy")
+
+                                </td>
+
+
+                                <!-- ================= PAYMENT ================= -->
+
+                                <td>
+
+                                    @if (successfulPayments.Any())
+                                    {
+
+                                        <span class="payment-success">
+
+                                            <i class="bi bi-check-circle-fill me-1"></i>
+
+                                            Paid
+
+                                        </span>
+
+                                        <br />
+
+                                        <small class="text-muted">
+
+                                            ₹@tenantTotalPaid.ToString("N2")
+
+                                        </small>
+
+                                        <br />
+
+                                        <span class="payment-count">
+
+                                            @successfulPayments.Count payment(s)
+
+                                        </span>
+
+                                    }
+                                    else
+                                    {
+
+                                        var hasPaymentRecords =
+                                            tenant.Payments != null &&
+                                            tenant.Payments.Any();
+
+                                        @if (hasPaymentRecords)
+                                        {
+
+                                            <span class="payment-pending">
+
+                                                <i class="bi bi-clock-fill me-1"></i>
+
+                                                Payment Pending
+
+                                            </span>
+
+                                        }
+                                        else
+                                        {
+
+                                            <span class="payment-none">
+
+                                                <i class="bi bi-dash-circle me-1"></i>
+
+                                                No Payment
+
+                                            </span>
+
+                                        }
+
+                                    }
+
+                                </td>
+
+
+                                <!-- ================= STATUS ================= -->
+
+                                <td>
+
+                                    @if (tenant.Status == "Pending")
+                                    {
+
+                                        <span class="status-badge status-pending">
+
+                                            <i class="bi bi-hourglass-split"></i>
+
+                                            Pending
+
+                                        </span>
+
+                                    }
+                                    else if (tenant.Status == "Confirmed")
+                                    {
+
+                                        <span class="status-badge status-confirmed">
+
+                                            <i class="bi bi-check-circle-fill"></i>
+
+                                            Confirmed
+
+                                        </span>
+
+                                    }
+                                    else if (tenant.Status == "Completed")
+                                    {
+
+                                        <span class="status-badge status-completed">
+
+                                            <i class="bi bi-check2-all"></i>
+
+                                            Completed
+
+                                        </span>
+
+                                    }
+                                    else if (tenant.Status == "Cancelled")
+                                    {
+
+                                        <span class="status-badge status-cancelled">
+
+                                            <i class="bi bi-x-circle-fill"></i>
+
+                                            Cancelled
+
+                                        </span>
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="status-badge status-pending">
+
+                                            @(tenant.Status ?? "Unknown")
+
+                                        </span>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- ================= ACTIONS ================= -->
+
+                                <td>
+
+                                    <!-- VIEW -->
+
+                                    <a asp-controller="OwnerTenant"
+                                       asp-action="Details"
+                                       asp-route-id="@tenant.BookingId"
+                                       class="action-btn view-btn"
+                                       title="View Tenant">
+
+                                        <i class="bi bi-eye-fill"></i>
+
+                                    </a>
+
+
+                                    <!-- PENDING ACTIONS -->
+                                    @if (tenant.Status == "Pending")
+                                    {
+
+                                        <!-- APPROVE -->
+
+                                        <form asp-controller="OwnerTenant"
+                                              asp-action="Approve"
+                                              asp-route-id="@tenant.BookingId"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="action-btn approve-btn"
+                                                    title="Approve Booking"
+                                                    onclick="return confirm('Are you sure you want to approve this booking?');">
+
+                                                <i class="bi bi-check-lg"></i>
+
+                                            </button>
+
+                                        </form>
+
+
+                                        <!-- REJECT -->
+
+                                        <form asp-controller="OwnerTenant"
+                                              asp-action="Reject"
+                                              asp-route-id="@tenant.BookingId"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="action-btn reject-btn"
+                                                    title="Reject Booking"
+                                                    onclick="return confirm('Are you sure you want to reject this booking?');">
+
+                                                <i class="bi bi-x-lg"></i>
+
+                                            </button>
+
+                                        </form>
+
+                                    }
+
+
+                                    <!-- CONFIRMED ACTION -->
+                                    @if (tenant.Status == "Confirmed")
+                                    {
+
+                                        <form asp-controller="OwnerTenant"
+                                              asp-action="Checkout"
+                                              asp-route-id="@tenant.BookingId"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="action-btn checkout-btn"
+                                                    title="Checkout Tenant"
+                                                    onclick="return confirm('Are you sure you want to checkout this tenant?');">
+
+                                                <i class="bi bi-box-arrow-right"></i>
+
+                                            </button>
+
+                                        </form>
+
+                                    }
+
+                                </td>
+
+                            </tr>
+
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        }
+        else
+        {
+
+            <!-- ================= EMPTY STATE ================= -->
+
+            <div class="empty-state">
+
+                <div class="empty-icon">
+
+                    <i class="bi bi-people"></i>
+
+                </div>
+
+                <h5>
+
+                    No Tenants Found
+
+                </h5>
+
+                <p>
+
+                    Tenants will appear here when users book rooms
+                    in your PG properties.
+
+                </p>
+
+            </div>
+
+        }
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     SEARCH SCRIPT
+========================================================== -->
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const searchInput =
+            document.getElementById("tenantSearch");
+
+        const table =
+            document.getElementById("tenantTable");
+
+        if (!searchInput || !table) {
+            return;
+        }
+
+        searchInput.addEventListener("input", function() {
+
+            const searchValue =
+                this.value.toLowerCase().trim();
+
+            const rows =
+                table.querySelectorAll("tbody tr");
+
+            rows.forEach(function(row) {
+
+                const text =
+                    row.innerText.toLowerCase();
+
+                row.style.display =
+                    text.includes(searchValue) ? "" : "none";
+
+            });
+
+        });
+
+    });
+
+</script>

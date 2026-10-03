@@ -1,0 +1,889 @@
+﻿@model PGManagement.Models.Payment
+
+@{
+    ViewData["Title"] = "Payment Successful";
+
+    var booking = Model.Booking;
+    var pg = booking?.PG;
+    var room = booking?.Room;
+    var bed = booking?.Bed;
+}
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="success-page">
+
+    <div class="container py-5">
+
+        <div class="success-wrapper">
+
+            <!-- SUCCESS ICON -->
+            <div class="success-icon">
+                <i class="bi bi-check-lg"></i>
+            </div>
+
+            <h1 class="success-title">
+                Payment Successful!
+            </h1>
+
+            <p class="success-message">
+                Your payment has been completed successfully.
+            </p>
+
+
+            <!-- RECEIPT -->
+            <div class="receipt-card">
+
+                <!-- RECEIPT HEADER -->
+                <div class="receipt-header">
+
+                    <div>
+
+                        <div class="receipt-logo">
+                            <i class="bi bi-building"></i>
+                            PG Management
+                        </div>
+
+                        <h4>
+                            <i class="bi bi-receipt"></i>
+                            Payment Receipt
+                        </h4>
+
+                        <span>
+                            Transaction ID:
+                            <strong>@Model.TransactionId</strong>
+                        </span>
+
+                    </div>
+
+
+                    <div class="success-badge">
+
+                        <i class="bi bi-check-circle-fill"></i>
+
+                        @Model.Status
+
+                    </div>
+
+                </div>
+
+
+                <hr />
+
+
+                <!-- PG DETAILS -->
+                <div class="section-title">
+
+                    <i class="bi bi-building"></i>
+
+                    PG Details
+
+                </div>
+
+
+                <div class="details-grid">
+
+                    <div class="detail-item">
+
+                        <span>PG Name</span>
+
+                        <strong>
+                            @(pg?.PGName ?? "N/A")
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>City</span>
+
+                        <strong>
+                            @(pg?.City ?? "N/A")
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item full-width">
+
+                        <span>Address</span>
+
+                        <strong>
+                            @(pg?.Address ?? "N/A")
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <hr />
+
+
+                <!-- BOOKING DETAILS -->
+                <div class="section-title">
+
+                    <i class="bi bi-calendar-check"></i>
+
+                    Booking Details
+
+                </div>
+
+
+                <div class="details-grid">
+
+                    <div class="detail-item">
+
+                        <span>Booking ID</span>
+
+                        <strong>
+                            #@Model.BookingId
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>Room</span>
+
+                        <strong>
+                            @(room?.RoomNumber ?? "N/A")
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>Bed</span>
+
+                        <strong>
+                            @(bed?.BedNumber ?? "N/A")
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>Stay Type</span>
+
+                        <strong>
+
+                            @if (Model.PaymentType == "Daily")
+                            {
+                                <span class="daily-text">
+                                    <i class="bi bi-calendar-day"></i>
+                                    Daily
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="monthly-text">
+                                    <i class="bi bi-calendar-month"></i>
+                                    Monthly
+                                </span>
+                            }
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>Booking Status</span>
+
+                        <strong class="confirmed">
+
+                            <i class="bi bi-check-circle-fill"></i>
+
+                            @(booking?.Status ?? "N/A")
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>Booking Date</span>
+
+                        <strong>
+                            @(booking?.BookingDate.ToString(
+                                "dd MMM yyyy, hh:mm tt") ?? "N/A")
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <hr />
+
+
+                <!-- BILLING PERIOD -->
+                @if (Model.FromDate.HasValue &&
+                     Model.ToDate.HasValue)
+                {
+                    <div class="section-title">
+
+                        <i class="bi bi-calendar-range"></i>
+
+                        Billing Period
+
+                    </div>
+
+
+                    <div class="billing-period">
+
+                        <div class="billing-date">
+
+                            <small>From</small>
+
+                            <strong>
+                                @Model.FromDate.Value.ToString("dd MMM yyyy")
+                            </strong>
+
+                        </div>
+
+
+                        <div class="billing-arrow">
+
+                            <i class="bi bi-arrow-right"></i>
+
+                        </div>
+
+
+                        <div class="billing-date">
+
+                            <small>To</small>
+
+                            <strong>
+                                @Model.ToDate.Value.ToString("dd MMM yyyy")
+                            </strong>
+
+                        </div>
+
+                    </div>
+                }
+
+
+                <hr />
+
+
+                <!-- PAYMENT DETAILS -->
+                <div class="section-title">
+
+                    <i class="bi bi-credit-card"></i>
+
+                    Payment Details
+
+                </div>
+
+
+                <div class="details-grid">
+
+                    <div class="detail-item">
+
+                        <span>Payment Method</span>
+
+                        <strong>
+                            <i class="bi bi-wallet2"></i>
+                            @Model.PaymentMethod
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>Payment Type</span>
+
+                        <strong>
+                            @Model.PaymentType
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>Payment Date</span>
+
+                        <strong>
+                            @Model.PaymentDate.ToString(
+                                "dd MMM yyyy, hh:mm tt")
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item">
+
+                        <span>Payment Status</span>
+
+                        <strong class="success-text">
+
+                            <i class="bi bi-check-circle-fill"></i>
+
+                            @Model.Status
+
+                        </strong>
+
+                    </div>
+
+
+                    <div class="detail-item full-width">
+
+                        <span>Transaction ID</span>
+
+                        <strong class="transaction">
+                            @Model.TransactionId
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- AMOUNT -->
+                <div class="amount-box">
+
+                    <div class="amount-label">
+
+                        <i class="bi bi-cash-stack"></i>
+
+                        Total Amount Paid
+
+                    </div>
+
+                    <div class="amount">
+
+                        <span>₹</span>@Model.Amount.ToString("N2")
+
+                    </div>
+
+                </div>
+
+
+                <!-- SUCCESS MESSAGE -->
+                <div class="receipt-success-message">
+
+                    <i class="bi bi-shield-check"></i>
+
+                    <div>
+
+                        <strong>
+                            Payment recorded successfully
+                        </strong>
+
+                        <span>
+                            Keep this receipt for your records.
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- BUTTONS -->
+                <div class="action-buttons">
+
+                    <a asp-controller="Booking"
+                       asp-action="MyBookings"
+                       class="btn btn-primary">
+
+                        <i class="bi bi-calendar-check"></i>
+
+                        My Bookings
+
+                    </a>
+
+
+                    <a asp-controller="Payment"
+                       asp-action="History"
+                       class="btn btn-outline-primary">
+
+                        <i class="bi bi-clock-history"></i>
+
+                        Payment History
+
+                    </a>
+
+
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            onclick="window.print()">
+
+                        <i class="bi bi-printer"></i>
+
+                        Print Receipt
+
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- SECURITY -->
+            <div class="security-note">
+
+                <i class="bi bi-shield-lock-fill"></i>
+
+                Your payment information is securely recorded in PG Management.
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    body {
+        background: #f5f7fb;
+    }
+
+    .success-page {
+        min-height: 100vh;
+    }
+
+    .success-wrapper {
+        max-width: 900px;
+        margin: auto;
+        text-align: center;
+    }
+
+
+    /* SUCCESS ICON */
+
+    .success-icon {
+        width: 90px;
+        height: 90px;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        background: #198754;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 50px;
+        box-shadow: 0 12px 35px rgba(25,135,84,.25);
+        animation: successPop .45s ease;
+    }
+
+    @@keyframes successPop {
+
+        0% {
+            transform: scale(.5);
+            opacity: 0;
+        }
+
+        70% {
+            transform: scale(1.1);
+        }
+
+        100% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+
+    .success-title {
+        font-size: 34px;
+        font-weight: 800;
+        color: #212529;
+        margin-bottom: 8px;
+    }
+
+    .success-message {
+        color: #6c757d;
+        font-size: 16px;
+        margin-bottom: 30px;
+    }
+
+
+    /* RECEIPT */
+
+    .receipt-card {
+        background: white;
+        border-radius: 22px;
+        padding: 32px;
+        text-align: left;
+        box-shadow: 0 15px 45px rgba(0,0,0,.08);
+        border: 1px solid #e9ecef;
+    }
+
+
+    .receipt-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+    }
+
+
+    .receipt-logo {
+        color: #0d6efd;
+        font-weight: 800;
+        font-size: 14px;
+        margin-bottom: 12px;
+    }
+
+        .receipt-logo i {
+            margin-right: 5px;
+        }
+
+
+    .receipt-header h4 {
+        margin: 0 0 7px;
+        font-weight: 700;
+    }
+
+        .receipt-header h4 i {
+            margin-right: 7px;
+            color: #0d6efd;
+        }
+
+
+    .receipt-header span {
+        color: #6c757d;
+        font-size: 13px;
+    }
+
+
+    /* BADGE */
+
+    .success-badge {
+        background: #d1e7dd;
+        color: #146c43;
+        padding: 9px 15px;
+        border-radius: 30px;
+        font-size: 13px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+        .success-badge i {
+            margin-right: 5px;
+        }
+
+
+    /* SECTION */
+
+    .section-title {
+        font-size: 17px;
+        font-weight: 700;
+        margin: 22px 0 15px;
+        color: #212529;
+    }
+
+        .section-title i {
+            color: #0d6efd;
+            margin-right: 7px;
+        }
+
+
+    /* DETAILS */
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px 28px;
+    }
+
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+
+        .detail-item span {
+            color: #8a8f98;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+
+        .detail-item strong {
+            color: #212529;
+            font-size: 15px;
+        }
+
+
+    .full-width {
+        grid-column: 1 / -1;
+    }
+
+
+    .confirmed {
+        color: #198754 !important;
+    }
+
+
+    .success-text {
+        color: #198754 !important;
+    }
+
+
+    .daily-text {
+        color: #fd7e14 !important;
+    }
+
+
+    .monthly-text {
+        color: #0d6efd !important;
+    }
+
+
+    .transaction {
+        font-family: monospace;
+        letter-spacing: .6px;
+        background: #f8f9fa;
+        padding: 8px 10px;
+        border-radius: 8px;
+        display: inline-block;
+        word-break: break-all;
+    }
+
+
+    /* BILLING PERIOD */
+
+    .billing-period {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 25px;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 15px;
+        border: 1px solid #e9ecef;
+    }
+
+
+    .billing-date {
+        text-align: center;
+    }
+
+
+        .billing-date small {
+            display: block;
+            color: #6c757d;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+
+        .billing-date strong {
+            font-size: 17px;
+        }
+
+
+    .billing-arrow {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e8f1ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+    /* AMOUNT */
+
+    .amount-box {
+        margin-top: 28px;
+        padding: 22px 25px;
+        border-radius: 16px;
+        background: linear-gradient(135deg,#f0f7ff,#f5f3ff);
+        border: 1px dashed #9ec5fe;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+
+    .amount-label {
+        color: #6c757d;
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+        .amount-label i {
+            color: #0d6efd;
+            margin-right: 5px;
+        }
+
+
+    .amount {
+        font-size: 31px;
+        font-weight: 800;
+        color: #198754;
+    }
+
+
+        .amount span {
+            font-size: 22px;
+            vertical-align: 3px;
+        }
+
+
+    /* SUCCESS INFO */
+
+    .receipt-success-message {
+        margin-top: 18px;
+        padding: 15px;
+        border-radius: 13px;
+        background: #eaf7ef;
+        border: 1px solid #c7ead5;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #146c43;
+    }
+
+
+        .receipt-success-message > i {
+            font-size: 25px;
+        }
+
+
+        .receipt-success-message strong {
+            display: block;
+            font-size: 14px;
+        }
+
+
+        .receipt-success-message span {
+            display: block;
+            color: #5f7568;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+
+    /* BUTTONS */
+
+    .action-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 28px;
+    }
+
+
+        .action-buttons .btn {
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+
+
+    /* SECURITY */
+
+    .security-note {
+        text-align: center;
+        color: #6c757d;
+        font-size: 13px;
+        padding: 18px;
+    }
+
+
+        .security-note i {
+            color: #198754;
+            margin-right: 5px;
+        }
+
+
+    /* RESPONSIVE */
+
+    @@media (max-width: 650px) {
+
+        .receipt-card {
+            padding: 20px;
+        }
+
+        .receipt-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .full-width {
+            grid-column: auto;
+        }
+
+        .billing-period {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .billing-arrow {
+            transform: rotate(90deg);
+        }
+
+        .amount-box {
+            flex-direction: column;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .success-title {
+            font-size: 28px;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+            .action-buttons .btn {
+                width: 100%;
+            }
+    }
+
+
+    /* PRINT */
+
+    @@media print {
+
+        body {
+            background: white !important;
+        }
+
+        .success-icon {
+            box-shadow: none;
+        }
+
+        .action-buttons,
+        .security-note {
+            display: none !important;
+        }
+
+        .receipt-card {
+            box-shadow: none !important;
+            border: 1px solid #ddd;
+        }
+
+        .success-title {
+            font-size: 25px;
+        }
+    }
+
+</style>

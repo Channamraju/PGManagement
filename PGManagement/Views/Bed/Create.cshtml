@@ -1,0 +1,790 @@
+﻿@model PGManagement.Models.Bed
+
+@{
+    ViewData["Title"] = "Add Bed";
+
+    var room = ViewBag.Room as PGManagement.Models.Room;
+
+    var existingBeds = room?.Beds?.Count ?? 0;
+    var capacity = room?.Capacity ?? 0;
+    var remainingBeds = Math.Max(capacity - existingBeds, 0);
+
+    var progress = capacity > 0
+        ? (existingBeds * 100 / capacity)
+        : 0;
+}
+
+<div class="container py-4">
+
+    <!-- ========================================================= -->
+    <!-- HEADER -->
+    <!-- ========================================================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div class="page-title">
+
+            <div class="page-icon">
+                <i class="bi bi-plus-square-fill"></i>
+            </div>
+
+            <div>
+
+                <h2 class="fw-bold mb-1">
+                    Add Bed
+                </h2>
+
+                @if (room != null)
+                {
+                    <p class="text-muted mb-0">
+
+                        <i class="bi bi-door-open"></i>
+
+                        Room @room.RoomNumber
+
+                        <span class="mx-1">·</span>
+
+                        @room.PG?.PGName
+
+                    </p>
+                }
+
+            </div>
+
+        </div>
+
+
+        <a asp-controller="Bed"
+           asp-action="Index"
+           asp-route-roomId="@Model.RoomId"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back to Beds
+
+        </a>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- ROOM INFORMATION -->
+    <!-- ========================================================= -->
+    @if (room != null)
+    {
+        <div class="room-info-card mb-4">
+
+            <div class="room-info-left">
+
+                <div class="room-icon">
+
+                    <i class="bi bi-door-open-fill"></i>
+
+                </div>
+
+
+                <div>
+
+                    <h4 class="fw-bold mb-1">
+
+                        Room @room.RoomNumber
+
+                    </h4>
+
+
+                    <div class="text-muted small">
+
+                        <i class="bi bi-buildings"></i>
+
+                        @room.PG?.PGName
+
+                        @if (!string.IsNullOrWhiteSpace(
+                            room.PG?.City))
+                        {
+                            <span>
+                                · @room.PG.City
+                            </span>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="room-info-details">
+
+                <div class="room-detail">
+
+                    <span>
+                        Sharing
+                    </span>
+
+                    <strong>
+                        @room.SharingType
+                    </strong>
+
+                </div>
+
+
+                <div class="room-detail">
+
+                    <span>
+                        Capacity
+                    </span>
+
+                    <strong>
+                        @capacity
+                    </strong>
+
+                </div>
+
+
+                <div class="room-detail">
+
+                    <span>
+                        Existing
+                    </span>
+
+                    <strong>
+                        @existingBeds
+                    </strong>
+
+                </div>
+
+
+                <div class="room-detail remaining">
+
+                    <span>
+                        Remaining
+                    </span>
+
+                    <strong>
+                        @remainingBeds
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ===================================================== -->
+        <!-- CAPACITY PROGRESS -->
+        <!-- ===================================================== -->
+
+        <div class="card border-0 shadow-sm mb-4">
+
+            <div class="card-body p-4">
+
+                <div class="d-flex justify-content-between
+                    align-items-center mb-2">
+
+                    <div>
+
+                        <strong>
+                            Bed Capacity
+                        </strong>
+
+                        <div class="text-muted small">
+
+                            @existingBeds of @capacity beds added
+
+                        </div>
+
+                    </div>
+
+
+                    <strong>
+                        @progress%
+                    </strong>
+
+                </div>
+
+
+                <div class="progress"
+                     style="height: 10px;">
+
+                    <div class="progress-bar"
+                         role="progressbar"
+                         style="width: @progress%;"
+                         aria-valuenow="@progress"
+                         aria-valuemin="0"
+                         aria-valuemax="100">
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- ========================================================= -->
+    <!-- FORM -->
+    <!-- ========================================================= -->
+
+    <div class="row justify-content-center">
+
+        <div class="col-lg-7 col-xl-6">
+
+            <div class="card border-0 shadow-sm form-card">
+
+                <div class="card-body p-4 p-md-5">
+
+                    <div class="form-heading mb-4">
+
+                        <div class="form-heading-icon">
+
+                            <i class="bi bi-bed-fill"></i>
+
+                        </div>
+
+                        <div>
+
+                            <h4 class="fw-bold mb-1">
+                                New Bed
+                            </h4>
+
+                            <p class="text-muted mb-0">
+                                Enter the bed number for this room.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <form asp-controller="Bed"
+                          asp-action="Create"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+
+                        <input type="hidden"
+                               asp-for="RoomId" />
+
+
+                        <!-- Validation -->
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="alert alert-danger
+                            border-0
+                            @(ViewData.ModelState.IsValid
+                                ? "d-none"
+                                : "")">
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- BED NUMBER -->
+                        <!-- ================================================= -->
+
+                        <div class="mb-4">
+
+                            <label asp-for="BedNumber"
+                                   class="form-label fw-semibold">
+
+                                Bed Number
+
+                            </label>
+
+
+                            <div class="input-group input-group-lg">
+
+                                <span class="input-group-text">
+
+                                    <i class="bi bi-tag-fill"></i>
+
+                                </span>
+
+
+                                <input asp-for="BedNumber"
+                                       class="form-control"
+                                       placeholder="Example: Room101-B1"
+                                       autocomplete="off" />
+
+                            </div>
+
+
+                            <span asp-validation-for="BedNumber"
+                                  class="text-danger small">
+                            </span>
+
+
+                            <div class="form-text">
+
+                                Use a unique bed number for this room.
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- ROOM -->
+                        <!-- ================================================= -->
+
+                        <div class="mb-4">
+
+                            <label class="form-label fw-semibold">
+
+                                Room
+
+                            </label>
+
+
+                            <div class="room-input">
+
+                                <div class="room-input-icon">
+
+                                    <i class="bi bi-door-open-fill"></i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <strong>
+                                        Room @room?.RoomNumber
+                                    </strong>
+
+                                    <small>
+                                        @room?.PG?.PGName
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- STATUS -->
+                        <!-- ================================================= -->
+
+                        <div class="status-info mb-4">
+
+                            <div class="status-info-icon">
+
+                                <i class="bi bi-check-circle-fill"></i>
+
+                            </div>
+
+
+                            <div>
+
+                                <strong>
+                                    Bed Status
+                                </strong>
+
+                                <div>
+                                    New beds are added as
+                                    <span class="text-success fw-semibold">
+                                        Available
+                                    </span>.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- CAPACITY WARNING -->
+                        <!-- ================================================= -->
+                        @if (remainingBeds <= 0)
+                        {
+                            <div class="alert alert-warning border-0">
+
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+                                This room has reached its maximum
+                                capacity of @capacity beds.
+
+                            </div>
+                        }
+
+
+                        <!-- ================================================= -->
+                        <!-- BUTTONS -->
+                        <!-- ================================================= -->
+
+                        <div class="d-flex gap-2">
+
+                            <a asp-controller="Bed"
+                               asp-action="Index"
+                               asp-route-roomId="@Model.RoomId"
+                               class="btn btn-light btn-lg flex-fill">
+
+                                Cancel
+
+                            </a>
+
+
+                            <button type="submit"
+                                    class="btn btn-primary btn-lg flex-fill"
+                                @(remainingBeds <= 0
+                                    ? "disabled"
+                                    : "")>
+
+                                <i class="bi bi-plus-lg"></i>
+
+                                Add Bed
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    /* ========================================================= */
+    /* HEADER */
+    /* ========================================================= */
+
+    .page-title {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+
+    .page-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 15px;
+        background: #e7f1ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+
+    /* ========================================================= */
+    /* ROOM INFORMATION */
+    /* ========================================================= */
+
+    .room-info-card {
+        background: linear-gradient( 135deg, #f5f9ff, #ffffff );
+        border: 1px solid #e1eaff;
+        border-radius: 18px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+
+    .room-info-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+
+    .room-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 14px;
+        background: #e7f1ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+
+    .room-info-details {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+    }
+
+
+    .room-detail {
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        min-width: 65px;
+    }
+
+
+        .room-detail span {
+            font-size: 11px;
+            color: #6c757d;
+            margin-bottom: 3px;
+        }
+
+
+        .room-detail strong {
+            font-size: 16px;
+        }
+
+
+        .room-detail.remaining strong {
+            color: #198754;
+        }
+
+
+    /* ========================================================= */
+    /* FORM CARD */
+    /* ========================================================= */
+
+    .form-card {
+        border-radius: 20px;
+    }
+
+
+    .form-heading {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+    }
+
+
+    .form-heading-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 13px;
+        background: #e8f7ee;
+        color: #198754;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+    }
+
+
+    /* ========================================================= */
+    /* INPUT */
+    /* ========================================================= */
+
+    .input-group-text {
+        background: #f8f9fa;
+        border-right: 0;
+        color: #6c757d;
+    }
+
+
+    .input-group .form-control {
+        border-left: 0;
+    }
+
+
+        .input-group .form-control:focus {
+            border-left: 0;
+            box-shadow: none;
+        }
+
+
+    .input-group:focus-within {
+        box-shadow: 0 0 0 .2rem rgba( 13, 110, 253, .15 );
+        border-radius: 8px;
+    }
+
+
+    /* ========================================================= */
+    /* ROOM INPUT */
+    /* ========================================================= */
+
+    .room-input {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 13px 15px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+    }
+
+
+    .room-input-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #e7f1ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+    .room-input div:last-child {
+        display: flex;
+        flex-direction: column;
+    }
+
+
+    .room-input small {
+        color: #6c757d;
+        margin-top: 2px;
+    }
+
+
+    /* ========================================================= */
+    /* STATUS */
+    /* ========================================================= */
+
+    .status-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px;
+        background: #f4fbf7;
+        border: 1px solid #d8f0e1;
+        border-radius: 11px;
+        color: #495057;
+        font-size: 13px;
+    }
+
+
+    .status-info-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #e8f7ee;
+        color: #198754;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+
+    /* ========================================================= */
+    /* PROGRESS */
+    /* ========================================================= */
+
+    .progress {
+        background: #e9ecef;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+
+    .progress-bar {
+        border-radius: 20px;
+    }
+
+
+    /* ========================================================= */
+    /* BUTTONS */
+    /* ========================================================= */
+
+    .btn {
+        border-radius: 10px;
+    }
+
+
+    /* ========================================================= */
+    /* MOBILE */
+    /* ========================================================= */
+
+    @@media (max-width: 768px) {
+
+        .room-info-card {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+
+        .room-info-details {
+            width: 100%;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+
+        .room-detail {
+            flex: 1;
+        }
+    }
+
+
+    @@media (max-width: 576px) {
+
+        .page-title {
+            align-items: flex-start;
+        }
+
+
+        .page-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+        }
+
+
+        .page-title h2 {
+            font-size: 22px;
+        }
+
+
+        .container > .d-flex:first-child {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 15px;
+        }
+
+
+        .room-info-details {
+            flex-wrap: wrap;
+        }
+
+
+        .room-detail {
+            min-width: 45%;
+            padding: 8px;
+        }
+
+
+        .form-card .card-body {
+            padding: 25px !important;
+        }
+
+
+        .d-flex.gap-2 {
+            flex-direction: column;
+        }
+
+
+            .d-flex.gap-2 .btn {
+                width: 100%;
+            }
+    }
+
+</style>
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync(
+            "_ValidationScriptsPartial");
+    }
+
+}

@@ -1,0 +1,742 @@
+﻿@model PGManagement.Models.FoodMenu
+
+@{
+    ViewData["Title"] = "Edit Food Menu";
+
+    var pgs = ViewBag.PGs as IEnumerable<PGManagement.Models.PG>
+              ?? Enumerable.Empty<PGManagement.Models.PG>();
+}
+
+<div class="container py-4">
+
+    <!-- HEADER -->
+    <div class="page-header">
+
+        <div class="header-left">
+
+            <a asp-controller="FoodMenu"
+               asp-action="Manage"
+               asp-route-pgId="@Model.PGId"
+               class="back-btn">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+
+            <div class="header-icon">
+                <i class="bi bi-pencil-square"></i>
+            </div>
+
+            <div>
+                <h2>Edit Food Menu</h2>
+                <p>Update your PG food menu item</p>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- EDIT CARD -->
+    <div class="form-card">
+
+        <div class="form-header">
+
+            <div class="form-header-icon">
+                <i class="bi bi-pencil-square"></i>
+            </div>
+
+            <div>
+                <h4>Edit Food Item</h4>
+                <p>
+                    Update the food details and availability.
+                </p>
+            </div>
+
+        </div>
+
+
+        <form asp-controller="FoodMenu"
+              asp-action="Edit"
+              asp-route-id="@Model.FoodMenuId"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   asp-for="FoodMenuId" />
+
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+
+            <!-- PG -->
+            <div class="form-group">
+
+                <label asp-for="PGId"
+                       class="form-label">
+
+                    <i class="bi bi-building"></i>
+                    Select PG
+
+                </label>
+
+                <select asp-for="PGId"
+                        class="form-select">
+
+                    <option value="">
+                        -- Select PG --
+                    </option>
+
+                    @foreach (var pg in pgs)
+                    {
+                        <option value="@pg.PGId">
+                            @pg.PGName - @pg.City
+                        </option>
+                    }
+
+                </select>
+
+                <span asp-validation-for="PGId"
+                      class="text-danger">
+                </span>
+
+            </div>
+            <!-- DAY -->
+            <div class="form-group">
+
+                <label asp-for="DayOfWeek"
+                       class="form-label">
+
+                    <i class="bi bi-calendar-week"></i>
+                    Day
+
+                </label>
+
+                <select asp-for="DayOfWeek"
+                        class="form-select">
+
+                    <option value="">
+                        -- Select Day --
+                    </option>
+
+                    <option value="Monday">
+                        Monday
+                    </option>
+
+                    <option value="Tuesday">
+                        Tuesday
+                    </option>
+
+                    <option value="Wednesday">
+                        Wednesday
+                    </option>
+
+                    <option value="Thursday">
+                        Thursday
+                    </option>
+
+                    <option value="Friday">
+                        Friday
+                    </option>
+
+                    <option value="Saturday">
+                        Saturday
+                    </option>
+
+                    <option value="Sunday">
+                        Sunday
+                    </option>
+
+                </select>
+
+                <span asp-validation-for="DayOfWeek"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- FOOD NAME -->
+            <div class="form-group">
+
+                <label asp-for="ItemName"
+                       class="form-label">
+
+                    <i class="bi bi-card-text"></i>
+                    Food Item Name
+
+                </label>
+
+                <input asp-for="ItemName"
+                       class="form-control"
+                       placeholder="Example: Idli, Rice, Chapati..." />
+
+                <span asp-validation-for="ItemName"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- MEAL TYPE -->
+            <div class="form-group">
+
+                <label asp-for="MealType"
+                       class="form-label">
+
+                    <i class="bi bi-clock"></i>
+                    Meal Type
+
+                </label>
+
+                <select asp-for="MealType"
+                        class="form-select">
+
+                    <option value="">
+                        -- Select Meal Type --
+                    </option>
+
+                    <option value="Breakfast">
+                        🌅 Breakfast
+                    </option>
+
+                    <option value="Lunch">
+                        ☀️ Lunch
+                    </option>
+
+                    <option value="Dinner">
+                        🌙 Dinner
+                    </option>
+
+                    <option value="Snacks">
+                        🍪 Snacks
+                    </option>
+
+                </select>
+
+                <span asp-validation-for="MealType"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- DESCRIPTION -->
+            <div class="form-group">
+
+                <label asp-for="Description"
+                       class="form-label">
+
+                    <i class="bi bi-chat-left-text"></i>
+                    Description
+
+                </label>
+
+                <textarea asp-for="Description"
+                          class="form-control"
+                          rows="4"
+                          placeholder="Enter food description..."></textarea>
+
+                <span asp-validation-for="Description"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+          
+
+
+            <!-- AVAILABILITY -->
+            <div class="availability-box">
+
+                <div class="availability-content">
+
+                    <div class="availability-icon
+                        @(Model.IsAvailable
+                            ? "available-icon"
+                            : "unavailable-icon")">
+
+                        @if (Model.IsAvailable)
+                        {
+                            <i class="bi bi-check-circle-fill"></i>
+                        }
+                        else
+                        {
+                            <i class="bi bi-x-circle-fill"></i>
+                        }
+
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Food Availability
+                        </strong>
+
+                        <p id="availabilityText">
+                            @(Model.IsAvailable
+                                ? "Users can currently see this food item."
+                                : "This food item is hidden from users.")
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="availability-control">
+
+                    <span id="statusLabel"
+                          class="status-label
+                        @(Model.IsAvailable
+                            ? "status-available"
+                            : "status-unavailable")">
+
+                        @(Model.IsAvailable
+                            ? "Available"
+                            : "Unavailable")
+
+                    </span>
+
+                    <div class="form-check form-switch">
+
+                        <input asp-for="IsAvailable"
+                               class="form-check-input"
+                               role="switch"
+                               id="availableSwitch" />
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- CREATED DATE -->
+            <div class="created-info">
+
+                <i class="bi bi-calendar3"></i>
+
+                <span>
+                    Created:
+                    <strong>
+                        @Model.CreatedDate.ToString("dd MMM yyyy, hh:mm tt")
+                    </strong>
+                </span>
+
+            </div>
+
+
+            <!-- ACTIONS -->
+            <div class="form-actions">
+
+                <a asp-controller="FoodMenu"
+                   asp-action="Manage"
+                   asp-route-pgId="@Model.PGId"
+                   class="btn btn-light">
+
+                    <i class="bi bi-x-lg"></i>
+                    Cancel
+
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary">
+
+                    <i class="bi bi-check-lg"></i>
+                    Save Changes
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    body {
+        background: #f5f7fb;
+    }
+
+
+    /* HEADER */
+
+    .page-header {
+        margin-bottom: 25px;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .back-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        color: #495057;
+        text-decoration: none;
+        border: 1px solid #e1e5ea;
+        transition: .2s;
+    }
+
+        .back-btn:hover {
+            background: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+        }
+
+    .header-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 14px;
+        background: #0d6efd;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+    }
+
+    .page-header h2 {
+        margin: 0;
+        font-weight: 750;
+        color: #212529;
+    }
+
+    .page-header p {
+        margin: 4px 0 0;
+        color: #6c757d;
+    }
+
+
+    /* FORM */
+
+    .form-card {
+        max-width: 800px;
+        margin: auto;
+        background: white;
+        border-radius: 18px;
+        padding: 30px;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, .06);
+    }
+
+
+    .form-header {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding-bottom: 22px;
+        margin-bottom: 25px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .form-header-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 11px;
+        background: #eef4ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .form-header h4 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .form-header p {
+        margin: 3px 0 0;
+        color: #6c757d;
+        font-size: 13px;
+    }
+
+
+    /* FORM GROUP */
+
+    .form-group {
+        margin-bottom: 21px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 8px;
+    }
+
+        .form-label i {
+            color: #0d6efd;
+            margin-right: 5px;
+        }
+
+    .form-control,
+    .form-select {
+        min-height: 46px;
+        border-radius: 9px;
+        border: 1px solid #dfe3e8;
+    }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .10);
+        }
+
+    textarea.form-control {
+        min-height: auto;
+        resize: vertical;
+    }
+
+    .input-group-text {
+        background: #f8f9fa;
+        border-color: #dfe3e8;
+        font-weight: 600;
+    }
+
+
+    /* AVAILABILITY */
+
+    .availability-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 13px;
+        padding: 17px;
+        margin-bottom: 20px;
+    }
+
+    .availability-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .availability-icon {
+        width: 43px;
+        height: 43px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+    }
+
+    .available-icon {
+        background: #d1e7dd;
+        color: #198754;
+    }
+
+    .unavailable-icon {
+        background: #f8d7da;
+        color: #dc3545;
+    }
+
+    .availability-content strong {
+        display: block;
+        color: #212529;
+    }
+
+    .availability-content p {
+        margin: 3px 0 0;
+        color: #6c757d;
+        font-size: 12px;
+    }
+
+    .availability-control {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .status-label {
+        font-size: 12px;
+        font-weight: 700;
+        padding: 5px 10px;
+        border-radius: 20px;
+    }
+
+    .status-available {
+        background: #d1e7dd;
+        color: #146c43;
+    }
+
+    .status-unavailable {
+        background: #f8d7da;
+        color: #b02a37;
+    }
+
+    .form-switch {
+        padding-left: 0;
+    }
+
+        .form-switch .form-check-input {
+            margin-left: 0;
+            width: 44px;
+            height: 23px;
+            cursor: pointer;
+        }
+
+
+    /* CREATED */
+
+    .created-info {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        background: #f8f9fa;
+        border-radius: 9px;
+        padding: 12px 14px;
+        color: #6c757d;
+        font-size: 13px;
+        margin-bottom: 25px;
+    }
+
+        .created-info i {
+            color: #0d6efd;
+            font-size: 16px;
+        }
+
+        .created-info strong {
+            color: #343a40;
+        }
+
+
+    /* BUTTONS */
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+        .form-actions .btn {
+            min-width: 140px;
+            padding: 10px 17px;
+            border-radius: 9px;
+            font-weight: 600;
+        }
+
+
+    /* MOBILE */
+
+    @@media (max-width: 600px) {
+
+        .form-card {
+            padding: 20px;
+        }
+
+        .header-left {
+            align-items: flex-start;
+        }
+
+        .header-icon {
+            width: 48px;
+            height: 48px;
+        }
+
+        .availability-box {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .availability-control {
+            width: 100%;
+            justify-content: space-between;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+    }
+
+</style>
+
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const switchElement =
+            document.getElementById("availableSwitch");
+
+        const statusLabel =
+            document.getElementById("statusLabel");
+
+        const availabilityText =
+            document.getElementById("availabilityText");
+
+        if (!switchElement) return;
+
+        switchElement.addEventListener("change", function() {
+
+            if (this.checked) {
+
+                statusLabel.textContent = "Available";
+
+                statusLabel.classList.remove(
+                    "status-unavailable"
+                );
+
+                statusLabel.classList.add(
+                    "status-available"
+                );
+
+                availabilityText.textContent =
+                    "Users can currently see this food item.";
+
+            }
+            else {
+
+                statusLabel.textContent = "Unavailable";
+
+                statusLabel.classList.remove(
+                    "status-available"
+                );
+
+                statusLabel.classList.add(
+                    "status-unavailable"
+                );
+
+                availabilityText.textContent =
+                    "This food item is hidden from users.";
+
+            }
+
+        });
+
+    });
+
+</script>
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

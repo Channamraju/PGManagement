@@ -1,0 +1,905 @@
+﻿@model PGManagement.Models.Payment
+
+@{
+    ViewData["Title"] = "Payment Details";
+
+    var booking = Model.Booking;
+    var pg = booking?.PG;
+    var room = booking?.Room;
+    var bed = booking?.Bed;
+
+    string billingPeriod = "N/A";
+
+    if (Model.FromDate.HasValue && Model.ToDate.HasValue)
+    {
+        billingPeriod =
+            $"{Model.FromDate.Value:dd MMM yyyy} - {Model.ToDate.Value:dd MMM yyyy}";
+    }
+    else if (Model.BillingMonth.HasValue)
+    {
+        billingPeriod = Model.BillingMonth.Value.ToString("MMMM yyyy");
+    }
+}
+
+<div class="container py-5">
+
+    <!-- Top Navigation -->
+    <div class="top-bar">
+
+        <a asp-controller="Payment"
+           asp-action="History"
+           class="back-link">
+            <i class="bi bi-arrow-left"></i>
+            Payment History
+        </a>
+
+        <button type="button"
+                onclick="window.print()"
+                class="btn btn-outline-secondary print-btn">
+            <i class="bi bi-printer"></i>
+            Print Receipt
+        </button>
+
+    </div>
+
+
+    <!-- Receipt -->
+    <div class="receipt">
+
+        <!-- Receipt Header -->
+        <div class="receipt-header">
+
+            <div class="brand">
+
+                <div class="brand-icon">
+                    <i class="bi bi-house-heart-fill"></i>
+                </div>
+
+                <div>
+                    <h2>PG Management</h2>
+                    <p>Payment Receipt</p>
+                </div>
+
+            </div>
+
+
+            @if (Model.Status == "Success")
+            {
+                <div class="payment-status success">
+                    <i class="bi bi-check-circle-fill"></i>
+                    Payment Successful
+                </div>
+            }
+            else
+            {
+                <div class="payment-status failed">
+                    <i class="bi bi-x-circle-fill"></i>
+                    @Model.Status
+                </div>
+            }
+
+        </div>
+
+
+        <div class="divider"></div>
+
+
+        <!-- Amount -->
+        <div class="amount-section">
+
+            <span>Amount Paid</span>
+
+            <h1>
+                ₹@Model.Amount.ToString("N2")
+            </h1>
+
+            <small>
+                <i class="bi bi-calendar3"></i>
+                @Model.PaymentDate.ToString("dd MMMM yyyy, hh:mm tt")
+            </small>
+
+        </div>
+
+
+        <div class="divider"></div>
+
+
+        <!-- Payment Information -->
+        <div class="section">
+
+            <h3>
+                <i class="bi bi-credit-card"></i>
+                Payment Information
+            </h3>
+
+            <div class="info-grid">
+
+                <div class="info-item">
+
+                    <span>Payment ID</span>
+
+                    <strong>
+                        #@Model.PaymentId
+                    </strong>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <span>Payment Type</span>
+
+                    <strong>
+                        @Model.PaymentType
+                    </strong>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <span>Payment Method</span>
+
+                    <strong>
+                        <i class="bi bi-wallet2"></i>
+                        @Model.PaymentMethod
+                    </strong>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <span>Payment Status</span>
+
+                    @if (Model.Status == "Success")
+                    {
+                        <strong class="text-success">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Successful
+                        </strong>
+                    }
+                    else
+                    {
+                        <strong class="text-danger">
+                            @Model.Status
+                        </strong>
+                    }
+
+                </div>
+
+
+                <div class="info-item full">
+
+                    <span>Transaction ID</span>
+
+                    <strong class="transaction-id">
+                        @Model.TransactionId
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="divider"></div>
+
+
+        <!-- Billing Information -->
+        <div class="section">
+
+            <h3>
+                <i class="bi bi-calendar-range"></i>
+                Billing Information
+            </h3>
+
+            <div class="billing-box">
+
+                <div class="billing-icon">
+                    @if (Model.PaymentType == "Daily")
+                    {
+                        <i class="bi bi-calendar-day"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-calendar-month"></i>
+                    }
+                </div>
+
+                <div class="billing-content">
+
+                    <span>
+                        Billing Period
+                    </span>
+
+                    <strong>
+                        @billingPeriod
+                    </strong>
+
+                    @if (Model.PaymentType == "Monthly")
+                    {
+                        <small>
+                            Monthly accommodation payment
+                        </small>
+                    }
+                    else
+                    {
+                        <small>
+                            Daily accommodation payment
+                        </small>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="divider"></div>
+
+
+        <!-- PG Information -->
+        <div class="section">
+
+            <h3>
+                <i class="bi bi-building"></i>
+                PG Information
+            </h3>
+
+            <div class="info-grid">
+
+                <div class="info-item">
+
+                    <span>PG Name</span>
+
+                    <strong>
+                        @(pg?.PGName ?? "N/A")
+                    </strong>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <span>City</span>
+
+                    <strong>
+                        @(pg?.City ?? "N/A")
+                    </strong>
+
+                </div>
+
+
+                <div class="info-item full">
+
+                    <span>Address</span>
+
+                    <strong>
+                        @(pg?.Address ?? "N/A")
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="divider"></div>
+
+
+        <!-- Booking Information -->
+        <div class="section">
+
+            <h3>
+                <i class="bi bi-calendar-check"></i>
+                Booking Information
+            </h3>
+
+            <div class="info-grid">
+
+                <div class="info-item">
+
+                    <span>Booking ID</span>
+
+                    <strong>
+                        #@(booking?.BookingId.ToString() ?? "N/A")
+                    </strong>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <span>Booking Status</span>
+
+                    @if (booking?.Status == "Confirmed")
+                    {
+                        <strong class="text-success">
+                            <i class="bi bi-check-circle-fill"></i>
+                            Confirmed
+                        </strong>
+                    }
+                    else
+                    {
+                        <strong>
+                            @(booking?.Status ?? "N/A")
+                        </strong>
+                    }
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <span>Room Number</span>
+
+                    <strong>
+                        @(room?.RoomNumber ?? "N/A")
+                    </strong>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <span>Bed Number</span>
+
+                    <strong>
+                        @(bed?.BedNumber ?? "N/A")
+                    </strong>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <span>Stay Type</span>
+
+                    <strong>
+                        @(booking?.StayType ?? "N/A")
+                    </strong>
+
+                </div>
+
+
+                <div class="info-item">
+
+                    <span>Booking Date</span>
+
+                    <strong>
+                        @(booking?.BookingDate.ToString(
+                            "dd MMM yyyy, hh:mm tt") ?? "N/A")
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="divider"></div>
+
+
+        <!-- Amount Summary -->
+        <div class="total-section">
+
+            <div>
+
+                <span>Total Paid</span>
+
+                <small>
+                    @Model.PaymentType payment
+                </small>
+
+            </div>
+
+            <strong>
+                ₹@Model.Amount.ToString("N2")
+            </strong>
+
+        </div>
+
+
+        <!-- Receipt Footer -->
+        <div class="receipt-footer">
+
+            <div class="secure-payment">
+
+                <i class="bi bi-shield-check"></i>
+
+                Secure Payment
+
+            </div>
+
+            <p>
+                Thank you for using PG Management.
+            </p>
+
+            <small>
+                This is a computer-generated payment receipt.
+            </small>
+
+        </div>
+
+    </div>
+
+
+    <!-- Bottom Actions -->
+    <div class="bottom-actions">
+
+        <a asp-controller="Booking"
+           asp-action="MyBookings"
+           class="btn btn-primary">
+
+            <i class="bi bi-calendar-check"></i>
+            My Bookings
+
+        </a>
+
+
+        <a asp-controller="Payment"
+           asp-action="History"
+           class="btn btn-outline-primary">
+
+            <i class="bi bi-clock-history"></i>
+            Payment History
+
+        </a>
+
+
+        <a asp-controller="UserPG"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-search"></i>
+            Search PGs
+
+        </a>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    body {
+        background: #f5f7fb;
+    }
+
+
+    /* Top */
+
+    .top-bar {
+        max-width: 850px;
+        margin: 0 auto 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+    }
+
+
+    .back-link {
+        text-decoration: none;
+        color: #0d6efd;
+        font-weight: 600;
+    }
+
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+
+    /* Receipt */
+
+    .receipt {
+        max-width: 850px;
+        margin: auto;
+        background: white;
+        border-radius: 18px;
+        padding: 35px;
+        box-shadow: 0 10px 35px rgba(0,0,0,.08);
+        border: 1px solid #e9ecef;
+    }
+
+
+    /* Header */
+
+    .receipt-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+    }
+
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+
+    .brand-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 14px;
+        background: #0d6efd;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+    }
+
+
+    .brand h2 {
+        margin: 0;
+        font-size: 23px;
+        font-weight: 700;
+    }
+
+
+    .brand p {
+        margin: 3px 0 0;
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+
+    /* Status */
+
+    .payment-status {
+        padding: 9px 15px;
+        border-radius: 25px;
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+
+        .payment-status.success {
+            background: #d1e7dd;
+            color: #146c43;
+        }
+
+
+        .payment-status.failed {
+            background: #f8d7da;
+            color: #b02a37;
+        }
+
+
+    /* Divider */
+
+    .divider {
+        height: 1px;
+        background: #e9ecef;
+        margin: 25px 0;
+    }
+
+
+    /* Amount */
+
+    .amount-section {
+        text-align: center;
+        padding: 10px 0;
+    }
+
+
+        .amount-section span {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+
+        .amount-section h1 {
+            margin: 5px 0;
+            font-size: 40px;
+            font-weight: 800;
+            color: #198754;
+        }
+
+
+        .amount-section small {
+            color: #8a8f98;
+        }
+
+
+    /* Sections */
+
+    .section h3 {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #212529;
+    }
+
+
+        .section h3 i {
+            margin-right: 7px;
+        }
+
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px 30px;
+    }
+
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+
+        .info-item.full {
+            grid-column: 1 / -1;
+        }
+
+
+        .info-item span {
+            color: #8a8f98;
+            font-size: 13px;
+        }
+
+
+        .info-item strong {
+            color: #212529;
+            font-size: 15px;
+            word-break: break-word;
+        }
+
+
+    .transaction-id {
+        font-family: monospace;
+        letter-spacing: .5px;
+        background: #f8f9fa;
+        padding: 8px 10px;
+        border-radius: 7px;
+    }
+
+
+    .text-success {
+        color: #198754 !important;
+    }
+
+
+    .text-danger {
+        color: #dc3545 !important;
+    }
+
+
+    /* Billing */
+
+    .billing-box {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 13px;
+        padding: 18px;
+    }
+
+
+    .billing-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #e7f1ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+        flex-shrink: 0;
+    }
+
+
+    .billing-content {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+
+        .billing-content span {
+            color: #8a8f98;
+            font-size: 13px;
+        }
+
+
+        .billing-content strong {
+            font-size: 16px;
+            color: #212529;
+        }
+
+
+        .billing-content small {
+            color: #6c757d;
+            font-size: 12px;
+        }
+
+
+    /* Total */
+
+    .total-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 18px 20px;
+    }
+
+
+        .total-section div {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+
+        .total-section span {
+            font-size: 16px;
+            color: #495057;
+            font-weight: 600;
+        }
+
+
+        .total-section small {
+            color: #8a8f98;
+            font-size: 12px;
+        }
+
+
+        .total-section strong {
+            font-size: 25px;
+            color: #198754;
+        }
+
+
+    /* Footer */
+
+    .receipt-footer {
+        margin-top: 25px;
+        text-align: center;
+        color: #6c757d;
+        font-size: 13px;
+    }
+
+
+    .secure-payment {
+        color: #198754;
+        font-weight: 600;
+        margin-bottom: 6px;
+    }
+
+
+    .receipt-footer p {
+        margin: 0 0 3px;
+    }
+
+
+    .receipt-footer small {
+        color: #9aa0a6;
+    }
+
+
+    /* Buttons */
+
+    .bottom-actions {
+        max-width: 850px;
+        margin: 20px auto 0;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+
+        .bottom-actions .btn {
+            border-radius: 10px;
+            padding: 10px 18px;
+            font-weight: 600;
+        }
+
+
+    /* Mobile */
+
+    @@media (max-width: 650px) {
+
+        .receipt {
+            padding: 22px;
+            border-radius: 14px;
+        }
+
+
+        .top-bar {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+
+        .print-btn {
+            width: 100%;
+        }
+
+
+        .receipt-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+
+        .payment-status {
+            width: 100%;
+            text-align: center;
+        }
+
+
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+
+        .info-item.full {
+            grid-column: auto;
+        }
+
+
+        .amount-section h1 {
+            font-size: 34px;
+        }
+
+
+        .billing-box {
+            align-items: flex-start;
+        }
+
+
+        .bottom-actions {
+            flex-direction: column;
+        }
+
+
+            .bottom-actions .btn {
+                width: 100%;
+            }
+    }
+
+
+    /* Print */
+
+    @@media print {
+
+        body {
+            background: white !important;
+        }
+
+
+        .top-bar,
+        .bottom-actions {
+            display: none !important;
+        }
+
+
+        .receipt {
+            box-shadow: none !important;
+            border: 1px solid #ddd;
+            max-width: 100%;
+            padding: 20px;
+        }
+    }
+
+</style>

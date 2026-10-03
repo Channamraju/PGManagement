@@ -1,0 +1,192 @@
+﻿@model PGManagement.Models.PG
+
+@{
+    ViewData["Title"] = "Add PG";
+}
+
+<div class="container mt-4">
+
+    <h2 class="fw-bold mb-4">
+        <i class="bi bi-building-add"></i>
+        Add New PG
+    </h2>
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body">
+
+            <form asp-action="Create"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3">
+                </div>
+
+
+                <!-- PG Name -->
+
+                <div class="mb-3">
+
+                    <label asp-for="PGName"
+                           class="form-label fw-bold">
+                        PG Name
+                    </label>
+
+                    <input asp-for="PGName"
+                           class="form-control"
+                           placeholder="Enter PG name" />
+
+                    <span asp-validation-for="PGName"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- Address -->
+
+                <div class="mb-3">
+
+                    <label asp-for="Address"
+                           class="form-label fw-bold">
+                        Address
+                    </label>
+
+                    <textarea asp-for="Address"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Enter PG address">
+                    </textarea>
+
+                    <span asp-validation-for="Address"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- City -->
+
+                <div class="mb-3">
+
+                    <label asp-for="City"
+                           class="form-label fw-bold">
+                        City
+                    </label>
+
+                    <input asp-for="City"
+                           class="form-control"
+                           placeholder="Enter city" />
+
+                    <span asp-validation-for="City"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- Description -->
+
+                <div class="mb-3">
+
+                    <label asp-for="Description"
+                           class="form-label fw-bold">
+                        Description
+                    </label>
+
+                    <textarea asp-for="Description"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Enter PG description">
+                    </textarea>
+
+                </div>
+
+
+                <!-- Gender -->
+
+                <div class="mb-3">
+
+                    <label asp-for="GenderType"
+                           class="form-label fw-bold">
+                        Gender
+                    </label>
+
+                    <select asp-for="GenderType"
+                            class="form-select">
+
+                        <option value="Any">
+                            Any
+                        </option>
+
+                        <option value="Male">
+                            Male
+                        </option>
+
+                        <option value="Female">
+                            Female
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- PG IMAGE -->
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-bold">
+                        PG Image
+                    </label>
+
+                    <input type="file"
+                           name="imageFile"
+                           class="form-control"
+                           accept=".jpg,.jpeg,.png,.webp" />
+
+                    <div class="form-text">
+                        Upload JPG, JPEG, PNG or WEBP image.
+                        Maximum size: 5 MB.
+                    </div>
+
+                </div>
+
+
+                <!-- Buttons -->
+
+                <div class="d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        <i class="bi bi-save"></i>
+                        Save PG
+
+                    </button>
+
+                    <a asp-action="MyPGs"
+                       class="btn btn-outline-secondary">
+
+                        Cancel
+
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

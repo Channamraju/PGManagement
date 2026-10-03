@@ -1,0 +1,132 @@
+﻿@model PGManagement.ViewModels.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="container mt-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-6">
+
+            <div class="card shadow">
+
+                <div class="card-header text-center">
+                    <h3>PG Management</h3>
+                    <h5>Create Account</h5>
+                </div>
+
+                <div class="card-body">
+
+                    <form asp-action="Register"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="All"
+                             class="text-danger">
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Full Name</label>
+
+                            <input asp-for="FullName"
+                                   class="form-control"
+                                   placeholder="Enter full name" />
+
+                            <span asp-validation-for="FullName"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Email</label>
+
+                            <input asp-for="Email"
+                                   class="form-control"
+                                   placeholder="Enter email" />
+
+                            <span asp-validation-for="Email"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Password</label>
+
+                            <input asp-for="Password"
+                                   class="form-control"
+                                   placeholder="Enter password" />
+
+                            <span asp-validation-for="Password"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Phone</label>
+
+                            <input asp-for="Phone"
+                                   class="form-control"
+                                   placeholder="Enter phone number" />
+
+                            <span asp-validation-for="Phone"
+                                  class="text-danger">
+                            </span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Address</label>
+
+                            <textarea asp-for="Address"
+                                      class="form-control"
+                                      placeholder="Enter address">
+                            </textarea>
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label>Register As</label>
+
+                            <select name="userType"
+                                    class="form-select">
+
+                                <option value="USER">
+                                    User
+                                </option>
+
+                                <option value="OWNER">
+                                    Owner
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <button type="submit"
+                                class="btn btn-primary w-100">
+                            Register
+                        </button>
+
+                    </form>
+
+                    <div class="text-center mt-3">
+
+                        Already have an account?
+
+                        <a asp-action="Login">
+                            Login
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,1126 @@
+﻿@model PGManagement.Models.Room
+
+@{
+    ViewData["Title"] = "Edit Room";
+
+    var pgs = ViewBag.PGs as List<PGManagement.Models.PG>;
+
+    var beds = Model.Beds?
+        .OrderBy(x => x.BedId)
+        .ToList()
+        ?? new List<PGManagement.Models.Bed>();
+
+    var occupiedBeds = beds.Count(x => x.Status == "Occupied");
+    var availableBeds = beds.Count(x => x.Status == "Available");
+}
+
+<div class="container py-4">
+
+    <!-- ========================================================= -->
+    <!-- PAGE HEADER -->
+    <!-- ========================================================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-pencil-square text-primary"></i>
+                Edit Room
+            </h2>
+
+            <p class="text-muted mb-0">
+                Update room details, rent and bed capacity
+            </p>
+
+        </div>
+
+        <a asp-controller="Room"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+            Back to Rooms
+
+        </a>
+
+    </div>
+
+
+    <div class="row justify-content-center">
+
+        <div class="col-xl-8 col-lg-9">
+
+            <div class="card room-card border-0 shadow-sm">
+
+
+                <!-- ================================================= -->
+                <!-- HEADER -->
+                <!-- ================================================= -->
+
+                <div class="room-card-header">
+
+                    <div class="header-icon">
+                        <i class="bi bi-door-open"></i>
+                    </div>
+
+                    <div>
+
+                        <h4 class="mb-1">
+                            Edit Room @Model.RoomNumber
+                        </h4>
+
+                        <small>
+                            Update your room information
+                        </small>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card-body p-4">
+
+                    <form asp-controller="Room"
+                          asp-action="Edit"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden"
+                               asp-for="RoomId" />
+
+
+                        <!-- ================================================= -->
+                        <!-- VALIDATION -->
+                        <!-- ================================================= -->
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="alert alert-danger"
+                             role="alert">
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- PG DETAILS -->
+                        <!-- ================================================= -->
+
+                        <div class="form-section">
+
+                            <h5 class="section-title">
+
+                                <i class="bi bi-buildings"></i>
+
+                                PG Details
+
+                            </h5>
+
+
+                            <div class="mb-3">
+
+                                <label asp-for="PGId"
+                                       class="form-label fw-semibold">
+
+                                    Select PG
+
+                                </label>
+
+
+                                <select asp-for="PGId"
+                                        class="form-select form-select-lg">
+
+                                    @if (pgs != null)
+                                    {
+                                        foreach (var pg in pgs)
+                                        {
+                                            <option value="@pg.PGId">
+
+                                                @pg.PGName - @pg.City
+
+                                            </option>
+                                        }
+                                    }
+
+                                </select>
+
+
+                                <span asp-validation-for="PGId"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- ROOM DETAILS -->
+                        <!-- ================================================= -->
+
+                        <div class="form-section">
+
+                            <h5 class="section-title">
+
+                                <i class="bi bi-door-closed"></i>
+
+                                Room Details
+
+                            </h5>
+
+
+                            <div class="row">
+
+
+                                <!-- Room Number -->
+
+                                <div class="col-md-6 mb-3">
+
+                                    <label asp-for="RoomNumber"
+                                           class="form-label fw-semibold">
+
+                                        Room Number
+
+                                    </label>
+
+
+                                    <div class="input-group">
+
+                                        <span class="input-group-text">
+
+                                            <i class="bi bi-hash"></i>
+
+                                        </span>
+
+
+                                        <input asp-for="RoomNumber"
+                                               class="form-control"
+                                               placeholder="Example: 101" />
+
+                                    </div>
+
+
+                                    <span asp-validation-for="RoomNumber"
+                                          class="text-danger">
+                                    </span>
+
+                                </div>
+
+
+                                <!-- Room Type -->
+
+                                <div class="col-md-6 mb-3">
+
+                                    <label asp-for="RoomType"
+                                           class="form-label fw-semibold">
+
+                                        Room Type
+
+                                    </label>
+
+
+                                    <select asp-for="RoomType"
+                                            class="form-select">
+
+                                        <option value="">
+                                            -- Select Room Type --
+                                        </option>
+
+                                        <option value="A/C">
+                                            A/C
+                                        </option>
+
+                                        <option value="Non-A/C">
+                                            Non-A/C
+                                        </option>
+
+                                    </select>
+
+
+                                    <span asp-validation-for="RoomType"
+                                          class="text-danger">
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ================================================= -->
+                            <!-- SHARING -->
+                            <!-- ================================================= -->
+
+                            <div class="mb-3">
+
+                                <label asp-for="SharingType"
+                                       class="form-label fw-semibold">
+
+                                    Sharing Type
+
+                                </label>
+
+
+                                <select asp-for="SharingType"
+                                        id="sharingType"
+                                        class="form-select form-select-lg">
+
+                                    <option value="">
+                                        -- Select Sharing Type --
+                                    </option>
+
+                                    <option value="Single">
+                                        Single Sharing
+                                    </option>
+
+                                    <option value="Double">
+                                        Double Sharing
+                                    </option>
+
+                                    <option value="Triple">
+                                        Triple Sharing
+                                    </option>
+
+                                    <option value="Four">
+                                        Four Sharing
+                                    </option>
+
+                                </select>
+
+
+                                <span asp-validation-for="SharingType"
+                                      class="text-danger">
+                                </span>
+
+
+                                <div class="form-text">
+
+                                    <i class="bi bi-info-circle"></i>
+
+                                    Capacity is automatically based on
+                                    the sharing type.
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ================================================= -->
+                            <!-- CAPACITY -->
+                            <!-- ================================================= -->
+
+                            <div class="capacity-box mt-4">
+
+
+                                <div class="capacity-icon">
+
+                                    <i class="bi bi-people-fill"></i>
+
+                                </div>
+
+
+                                <div class="capacity-content">
+
+                                    <label asp-for="Capacity"
+                                           class="form-label fw-semibold">
+
+                                        Bed Capacity
+
+                                    </label>
+
+
+                                    <input asp-for="Capacity"
+                                           id="capacity"
+                                           type="number"
+                                           min="1"
+                                           class="form-control"
+                                           readonly />
+
+
+                                    <span asp-validation-for="Capacity"
+                                          class="text-danger">
+                                    </span>
+
+
+                                    <small class="text-muted">
+
+                                        Occupied beds cannot be removed.
+
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- CURRENT BED STATUS -->
+                        <!-- ================================================= -->
+
+                        <div class="form-section">
+
+                            <h5 class="section-title">
+
+                                <i class="bi bi-grid-3x3-gap"></i>
+
+                                Current Beds
+
+                            </h5>
+
+
+                            <div class="bed-summary">
+
+                                <div class="summary-item">
+
+                                    <div class="summary-icon total">
+
+                                        <i class="bi bi-bed"></i>
+
+                                    </div>
+
+                                    <div>
+
+                                        <small>Total Beds</small>
+
+                                        <strong>
+                                            @beds.Count
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="summary-item">
+
+                                    <div class="summary-icon available">
+
+                                        <i class="bi bi-check-circle"></i>
+
+                                    </div>
+
+                                    <div>
+
+                                        <small>Available</small>
+
+                                        <strong>
+                                            @availableBeds
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+
+                                <div class="summary-item">
+
+                                    <div class="summary-icon occupied">
+
+                                        <i class="bi bi-person-fill"></i>
+
+                                    </div>
+
+                                    <div>
+
+                                        <small>Occupied</small>
+
+                                        <strong>
+                                            @occupiedBeds
+                                        </strong>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- Bed List -->
+                            @if (beds.Any())
+                            {
+                                <div class="bed-list mt-3">
+
+                                    @foreach (var bed in beds)
+                                    {
+                                        var isOccupied =
+                                            bed.Status == "Occupied";
+
+                                        <div class="bed-card
+                                            @(isOccupied
+                                                ? "bed-occupied"
+                                                : "bed-available")">
+
+                                            <div class="bed-icon">
+
+                                                <i class="bi bi-bed-fill"></i>
+
+                                            </div>
+
+
+                                            <div class="bed-info">
+
+                                                <strong>
+                                                    @bed.BedNumber
+                                                </strong>
+
+                                                <small>
+                                                    Bed
+                                                </small>
+
+                                            </div>
+
+
+                                            @if (isOccupied)
+                                            {
+                                                <span class="bed-status occupied">
+
+                                                    <i class="bi bi-person-fill"></i>
+                                                    Occupied
+
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="bed-status available">
+
+                                                    <i class="bi bi-check-circle-fill"></i>
+                                                    Available
+
+                                                </span>
+                                            }
+
+                                        </div>
+                                    }
+
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="empty-beds">
+
+                                    <i class="bi bi-bed"></i>
+
+                                    <span>
+                                        No beds have been created for this room.
+                                    </span>
+
+                                </div>
+                            }
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- RENT DETAILS -->
+                        <!-- ================================================= -->
+
+                        <div class="form-section">
+
+                            <h5 class="section-title">
+
+                                <i class="bi bi-currency-rupee"></i>
+
+                                Rent Details
+
+                            </h5>
+
+
+                            <div class="row">
+
+
+                                <!-- Monthly Rent -->
+
+                                <div class="col-md-6 mb-3">
+
+                                    <label asp-for="MonthlyRent"
+                                           class="form-label fw-semibold">
+
+                                        Monthly Rent
+
+                                    </label>
+
+
+                                    <div class="input-group">
+
+                                        <span class="input-group-text">
+                                            ₹
+                                        </span>
+
+
+                                        <input asp-for="MonthlyRent"
+                                               type="number"
+                                               min="1"
+                                               step="0.01"
+                                               class="form-control"
+                                               placeholder="8000" />
+
+                                    </div>
+
+
+                                    <span asp-validation-for="MonthlyRent"
+                                          class="text-danger">
+                                    </span>
+
+                                </div>
+
+
+                                <!-- Daily Rent -->
+
+                                <div class="col-md-6 mb-3">
+
+                                    <label asp-for="DailyRent"
+                                           class="form-label fw-semibold">
+
+                                        Daily Rent
+
+                                    </label>
+
+
+                                    <div class="input-group">
+
+                                        <span class="input-group-text">
+                                            ₹
+                                        </span>
+
+
+                                        <input asp-for="DailyRent"
+                                               type="number"
+                                               min="1"
+                                               step="0.01"
+                                               class="form-control"
+                                               placeholder="350" />
+
+                                    </div>
+
+
+                                    <span asp-validation-for="DailyRent"
+                                          class="text-danger">
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="rent-info">
+
+                                <i class="bi bi-info-circle-fill"></i>
+
+                                <span>
+
+                                    Monthly rent is used for monthly stays.
+                                    Daily rent is used for daily stays.
+
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- CAPACITY WARNING -->
+                        <!-- ================================================= -->
+                        @if (occupiedBeds > 0)
+                        {
+                            <div class="occupied-warning">
+
+                                <div class="warning-icon">
+
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+
+                                </div>
+
+
+                                <div>
+
+                                    <strong>
+                                        @occupiedBeds bed(s) currently occupied
+                                    </strong>
+
+                                    <p class="mb-0">
+
+                                        You cannot reduce the room capacity
+                                        below @occupiedBeds.
+
+                                    </p>
+
+                                </div>
+
+                            </div>
+                        }
+
+
+                        <!-- ================================================= -->
+                        <!-- BUTTONS -->
+                        <!-- ================================================= -->
+
+                        <div class="form-actions">
+
+
+                            <a asp-controller="Room"
+                               asp-action="Index"
+                               class="btn btn-light btn-lg">
+
+                                <i class="bi bi-x-circle"></i>
+
+                                Cancel
+
+                            </a>
+
+
+                            <button type="submit"
+                                    class="btn btn-primary btn-lg">
+
+                                <i class="bi bi-check-circle"></i>
+
+                                Update Room
+
+                            </button>
+
+                        </div>
+
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    .room-card {
+        border-radius: 18px;
+        overflow: hidden;
+        background: #ffffff;
+    }
+
+
+    .room-card-header {
+        padding: 22px 25px;
+        background: linear-gradient(135deg, #0d6efd, #4f8dfd);
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+
+        .room-card-header h4 {
+            font-weight: 700;
+        }
+
+
+        .room-card-header small {
+            opacity: .9;
+        }
+
+
+    .header-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        background: rgba(255,255,255,.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+
+    .form-section {
+        padding: 20px 0;
+        border-bottom: 1px solid #eeeeee;
+    }
+
+
+    .section-title {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #212529;
+    }
+
+
+        .section-title i {
+            color: #0d6efd;
+            margin-right: 7px;
+        }
+
+
+    .form-label {
+        color: #343a40;
+    }
+
+
+    .form-control,
+    .form-select {
+        border-radius: 10px;
+        border: 1px solid #dfe3e8;
+    }
+
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 .15rem rgba(13,110,253,.12);
+        }
+
+
+    .input-group-text {
+        border-radius: 10px 0 0 10px;
+        background: #f8f9fa;
+    }
+
+
+    /* Capacity */
+
+    .capacity-box {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 18px;
+        background: #f8faff;
+        border: 1px solid #e3ebff;
+        border-radius: 14px;
+    }
+
+
+    .capacity-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #e7f1ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+    }
+
+
+    .capacity-content {
+        flex: 1;
+    }
+
+
+        .capacity-content .form-control {
+            max-width: 120px;
+            background: white;
+            font-weight: 700;
+        }
+
+
+    /* Bed Summary */
+
+    .bed-summary {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+
+
+    .summary-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px;
+        border-radius: 12px;
+        background: #f8f9fa;
+    }
+
+
+        .summary-item small {
+            display: block;
+            color: #6c757d;
+            font-size: 12px;
+        }
+
+
+        .summary-item strong {
+            display: block;
+            font-size: 20px;
+        }
+
+
+    .summary-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+        .summary-icon.total {
+            background: #e7f1ff;
+            color: #0d6efd;
+        }
+
+
+        .summary-icon.available {
+            background: #e8f7ee;
+            color: #198754;
+        }
+
+
+        .summary-icon.occupied {
+            background: #fff0f0;
+            color: #dc3545;
+        }
+
+
+    /* Beds */
+
+    .bed-list {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+
+    .bed-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        border-radius: 12px;
+        border: 1px solid #eeeeee;
+        background: white;
+    }
+
+
+    .bed-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f1f3f5;
+        color: #495057;
+    }
+
+
+    .bed-info {
+        flex: 1;
+    }
+
+
+        .bed-info strong {
+            display: block;
+            font-size: 14px;
+        }
+
+
+        .bed-info small {
+            color: #6c757d;
+        }
+
+
+    .bed-status {
+        padding: 5px 9px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+
+        .bed-status.available {
+            background: #e8f7ee;
+            color: #198754;
+        }
+
+
+        .bed-status.occupied {
+            background: #fff0f0;
+            color: #dc3545;
+        }
+
+
+    .bed-occupied {
+        border-color: #ffd6d6;
+    }
+
+
+    .bed-available {
+        border-color: #d9f0e2;
+    }
+
+
+    /* Rent */
+
+    .rent-info {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 12px 15px;
+        border-radius: 10px;
+        background: #f1f8ff;
+        color: #0d6efd;
+        font-size: 14px;
+    }
+
+
+    /* Warning */
+
+    .occupied-warning {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        margin-top: 25px;
+        padding: 15px;
+        border-radius: 12px;
+        background: #fff8e6;
+        border: 1px solid #ffe3a3;
+        color: #856404;
+    }
+
+
+    .warning-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: #fff0c2;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+    /* Empty */
+
+    .empty-beds {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 25px;
+        border: 1px dashed #ced4da;
+        border-radius: 12px;
+        color: #6c757d;
+    }
+
+
+    /* Actions */
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 25px;
+    }
+
+
+        .form-actions .btn {
+            border-radius: 10px;
+            padding-left: 22px;
+            padding-right: 22px;
+        }
+
+
+    /* Mobile */
+
+    @@media (max-width: 768px) {
+
+        .bed-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .bed-list {
+            grid-template-columns: 1fr;
+        }
+    }
+
+
+    @@media (max-width: 576px) {
+
+        .room-card-header {
+            padding: 18px;
+        }
+
+        .card-body {
+            padding: 20px !important;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+    }
+
+</style>
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+
+    <script>
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function() {
+
+                const sharingType =
+                    document.getElementById("sharingType");
+
+                const capacity =
+                    document.getElementById("capacity");
+
+
+                const capacityMap = {
+
+                    "Single": 1,
+
+                    "Double": 2,
+
+                    "Triple": 3,
+
+                    "Four": 4
+
+                };
+
+
+                function updateCapacity() {
+
+                    const selected =
+                        sharingType.value;
+
+                    const value =
+                        capacityMap[selected] || 0;
+
+                    capacity.value = value;
+
+                }
+
+
+                sharingType.addEventListener(
+                    "change",
+                    updateCapacity
+                );
+
+
+                updateCapacity();
+
+            }
+        );
+
+    </script>
+
+}

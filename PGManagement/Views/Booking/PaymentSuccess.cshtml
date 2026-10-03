@@ -1,0 +1,117 @@
+﻿@model PGManagement.Models.Payment
+
+@{
+    ViewData["Title"] = "Payment Successful";
+}
+
+<div class="container mt-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-7">
+
+            <div class="card shadow border-0">
+
+                <div class="card-body text-center p-5">
+
+                    <div class="mb-4">
+
+                        <i class="bi bi-check-circle-fill text-success"
+                           style="font-size: 70px;">
+                        </i>
+
+                    </div>
+
+                    <h2 class="text-success fw-bold">
+                        Payment Successful!
+                    </h2>
+
+                    <p class="text-muted">
+                        Your PG bed has been successfully booked.
+                    </p>
+
+                    <hr />
+
+                    <div class="text-start">
+
+                        <p>
+                            <strong>Transaction ID:</strong>
+                            @Model.TransactionId
+                        </p>
+
+                        <p>
+                            <strong>PG:</strong>
+                            @Model.Booking?.PG?.PGName
+                        </p>
+
+                        <p>
+                            <strong>Room:</strong>
+                            @Model.Booking?.Room?.RoomNumber
+                        </p>
+
+                        <p>
+                            <strong>Bed:</strong>
+                            @Model.Booking?.Bed?.BedNumber
+                        </p>
+
+                        <p>
+                            <strong>Amount:</strong>
+
+                            <span class="text-success fw-bold">
+                                ₹@Model.Amount.ToString("N2")
+                            </span>
+
+                        </p>
+
+                        <p>
+                            <strong>Payment Method:</strong>
+                            @Model.PaymentMethod
+                        </p>
+
+                        <p>
+                            <strong>Payment Date:</strong>
+                            @Model.PaymentDate.ToString("dd-MM-yyyy hh:mm tt")
+                        </p>
+
+                        <p>
+                            <strong>Payment Status:</strong>
+
+                            <span class="badge bg-success">
+                                @Model.Status
+                            </span>
+
+                        </p>
+
+                    </div>
+
+                    <hr />
+
+                    <div class="d-flex gap-2 justify-content-center">
+
+                        <a asp-controller="Booking"
+                           asp-action="MyBookings"
+                           class="btn btn-primary">
+
+                            My Bookings
+
+                        </a>
+
+                        <a asp-controller="Payment"
+                           asp-action="History"
+                           class="btn btn-outline-primary">
+
+                            Payment History
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

@@ -1,0 +1,1460 @@
+﻿@model PGManagement.Models.User
+
+@{
+    ViewData["Title"] = "My Profile";
+
+    var initials = "U";
+
+    if (!string.IsNullOrWhiteSpace(Model.FullName))
+    {
+        var nameParts = Model.FullName
+            .Trim()
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        if (nameParts.Length == 1)
+        {
+            initials = nameParts[0].Substring(0, 1).ToUpper();
+        }
+        else
+        {
+            initials =
+                nameParts[0].Substring(0, 1) +
+                nameParts[^1].Substring(0, 1);
+
+            initials = initials.ToUpper();
+        }
+    }
+
+    var maskedAadhaar = "Not added";
+
+    if (!string.IsNullOrWhiteSpace(Model.AadhaarNumber))
+    {
+        var aadhaar = Model.AadhaarNumber.Trim();
+
+        if (aadhaar.Length == 12)
+        {
+            maskedAadhaar =
+                "XXXX XXXX " +
+                aadhaar.Substring(8, 4);
+        }
+        else
+        {
+            maskedAadhaar = "XXXX";
+        }
+    }
+
+    var hasProfileImage =
+        !string.IsNullOrWhiteSpace(Model.ProfileImagePath);
+
+    var hasAadhaar =
+        !string.IsNullOrWhiteSpace(Model.AadhaarNumber);
+
+    var hasAadhaarDocument =
+        !string.IsNullOrWhiteSpace(Model.AadhaarImagePath);
+}
+
+<!-- =========================================================
+     BOOTSTRAP ICONS
+========================================================= -->
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+
+    /* =========================================================
+           PAGE
+        ========================================================= */
+
+    body {
+        background: #f5f7fb;
+        color: #1f2937;
+        font-family: "Segoe UI", Arial, sans-serif;
+    }
+
+    .profile-page {
+        max-width: 1180px;
+        margin: 30px auto 60px;
+        padding: 0 15px;
+    }
+
+
+    /* =========================================================
+           PROFILE MAIN CARD
+        ========================================================= */
+
+    .profile-main-card {
+        background: #ffffff;
+        border-radius: 24px;
+        overflow: hidden;
+        border: 1px solid #edf0f5;
+        box-shadow: 0 12px 35px rgba(15, 23, 42, .08);
+    }
+
+
+    /* =========================================================
+           COVER
+        ========================================================= */
+
+    .profile-cover {
+        height: 220px;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient( 135deg, #2563eb 0%, #4f46e5 45%, #7c3aed 100% );
+    }
+
+        .profile-cover::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient( 90deg, rgba(255,255,255,.05), transparent );
+        }
+
+    .cover-circle {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255,255,255,.08);
+    }
+
+    .cover-circle-one {
+        width: 330px;
+        height: 330px;
+        right: -90px;
+        top: -180px;
+    }
+
+    .cover-circle-two {
+        width: 220px;
+        height: 220px;
+        right: 170px;
+        bottom: -150px;
+    }
+
+    .cover-circle-three {
+        width: 130px;
+        height: 130px;
+        left: 45%;
+        top: 40px;
+        background: rgba(255,255,255,.04);
+    }
+
+
+    /* =========================================================
+           COVER TITLE
+        ========================================================= */
+
+    .cover-content {
+        position: absolute;
+        left: 35px;
+        top: 30px;
+        color: white;
+        z-index: 2;
+    }
+
+    .cover-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 7px 13px;
+        border-radius: 30px;
+        background: rgba(255,255,255,.14);
+        border: 1px solid rgba(255,255,255,.18);
+        font-size: 12px;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+    }
+
+    .cover-heading {
+        margin-top: 18px;
+        font-size: 26px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .cover-subtitle {
+        color: rgba(255,255,255,.78);
+        font-size: 14px;
+    }
+
+
+    /* =========================================================
+           PROFILE BODY
+        ========================================================= */
+
+    .profile-body {
+        padding: 0 35px 35px;
+    }
+
+
+    /* =========================================================
+           PROFILE HEADER
+        ========================================================= */
+
+    .profile-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 25px;
+        flex-wrap: wrap;
+    }
+
+
+    /* =========================================================
+           AVATAR
+        ========================================================= */
+
+    .avatar-wrapper {
+        position: relative;
+        display: inline-block;
+        margin-top: -68px;
+    }
+
+    .profile-avatar {
+        width: 138px;
+        height: 138px;
+        border-radius: 50%;
+        border: 7px solid white;
+        background: linear-gradient( 135deg, #2563eb, #7c3aed );
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        font-weight: 700;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(15,23,42,.20);
+    }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .online-dot {
+        position: absolute;
+        width: 22px;
+        height: 22px;
+        background: #22c55e;
+        border: 4px solid white;
+        border-radius: 50%;
+        right: 7px;
+        bottom: 12px;
+    }
+
+
+    /* =========================================================
+           PROFILE DETAILS
+        ========================================================= */
+
+    .profile-name {
+        margin-top: 13px;
+        font-size: 30px;
+        font-weight: 750;
+        color: #111827;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .verified-icon {
+        color: #2563eb;
+        font-size: 20px;
+    }
+
+    .profile-email {
+        color: #6b7280;
+        font-size: 14px;
+        margin-top: 5px;
+    }
+
+        .profile-email i {
+            color: #4f46e5;
+        }
+
+    .user-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 12px;
+        padding: 7px 14px;
+        border-radius: 30px;
+        background: #eef2ff;
+        color: #4f46e5;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+
+    /* =========================================================
+           ACTION BUTTONS
+        ========================================================= */
+
+    .profile-actions {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+
+        .profile-actions .btn {
+            border-radius: 10px;
+            padding: 9px 16px;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+
+    /* =========================================================
+           STATS
+        ========================================================= */
+
+    .stats-wrapper {
+        margin-top: 30px;
+    }
+
+    .stat-card {
+        height: 100%;
+        background: #f8fafc;
+        border: 1px solid #edf0f5;
+        border-radius: 17px;
+        padding: 20px;
+        transition: all .25s ease;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            background: white;
+            box-shadow: 0 10px 25px rgba(15,23,42,.08);
+        }
+
+    .stat-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .stat-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .stat-icon-blue {
+        background: #eaf2ff;
+        color: #2563eb;
+    }
+
+    .stat-icon-green {
+        background: #ecfdf5;
+        color: #059669;
+    }
+
+    .stat-icon-purple {
+        background: #f3e8ff;
+        color: #9333ea;
+    }
+
+    .stat-number {
+        font-size: 17px;
+        font-weight: 700;
+        margin-top: 15px;
+    }
+
+    .stat-label {
+        color: #6b7280;
+        font-size: 12px;
+        margin-top: 3px;
+    }
+
+
+    /* =========================================================
+           CONTENT GRID
+        ========================================================= */
+
+    .content-grid {
+        margin-top: 25px;
+    }
+
+    .section-card {
+        background: white;
+        border: 1px solid #edf0f5;
+        border-radius: 19px;
+        padding: 25px;
+        height: 100%;
+        box-shadow: 0 5px 18px rgba(15,23,42,.035);
+    }
+
+    .section-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .section-title-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        background: #eef2ff;
+        color: #4f46e5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+
+
+    /* =========================================================
+           INFORMATION ROW
+        ========================================================= */
+
+    .info-row {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 15px 0;
+        border-bottom: 1px solid #f0f2f5;
+    }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+    .info-icon {
+        width: 42px;
+        height: 42px;
+        flex-shrink: 0;
+        border-radius: 11px;
+        background: #f5f7ff;
+        color: #4f46e5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 17px;
+    }
+
+    .info-label {
+        color: #9ca3af;
+        font-size: 11px;
+        margin-bottom: 3px;
+    }
+
+    .info-value {
+        color: #1f2937;
+        font-size: 14px;
+        font-weight: 600;
+        word-break: break-word;
+    }
+
+
+    /* =========================================================
+           STATUS BADGE
+        ========================================================= */
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 11px;
+        border-radius: 20px;
+        background: #ecfdf5;
+        color: #059669;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+
+    /* =========================================================
+           AADHAAR
+        ========================================================= */
+
+    .aadhaar-card {
+        margin-top: 25px;
+    }
+
+    .security-alert {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #92400e;
+        border-radius: 13px;
+        padding: 15px;
+        font-size: 13px;
+    }
+
+    .security-alert-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .aadhaar-value {
+        letter-spacing: 1px;
+        font-family: monospace;
+        font-size: 16px;
+    }
+
+    .document-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 12px;
+        border-radius: 25px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .document-uploaded {
+        background: #ecfdf5;
+        color: #059669;
+    }
+
+    .document-not-uploaded {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+
+    /* =========================================================
+           SECURITY FOOTER
+        ========================================================= */
+
+    .security-footer {
+        margin-top: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        padding-top: 20px;
+        border-top: 1px solid #edf0f5;
+    }
+
+    .security-text {
+        color: #6b7280;
+        font-size: 12px;
+    }
+
+        .security-text i {
+            color: #10b981;
+        }
+
+
+    /* =========================================================
+           QUICK LINKS
+        ========================================================= */
+
+    .quick-links {
+        display: grid;
+        gap: 10px;
+        margin-top: 20px;
+    }
+
+    .quick-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 13px 15px;
+        background: #f8fafc;
+        border: 1px solid #edf0f5;
+        border-radius: 12px;
+        text-decoration: none;
+        color: #374151;
+        font-size: 13px;
+        font-weight: 600;
+        transition: .2s;
+    }
+
+        .quick-link:hover {
+            background: #eef2ff;
+            color: #4f46e5;
+            transform: translateX(3px);
+        }
+
+    .quick-link-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+        .quick-link-left i {
+            color: #4f46e5;
+            font-size: 17px;
+        }
+
+
+    /* =========================================================
+           MOBILE
+        ========================================================= */
+
+    @@media (max-width: 768px) {
+
+        .profile-page {
+            margin: 15px auto 40px;
+            padding: 0 10px;
+        }
+
+        .profile-cover {
+            height: 175px;
+        }
+
+        .cover-content {
+            left: 20px;
+            top: 22px;
+        }
+
+        .cover-heading {
+            font-size: 21px;
+        }
+
+        .profile-body {
+            padding: 0 18px 25px;
+        }
+
+        .profile-header {
+            display: block;
+        }
+
+        .avatar-wrapper {
+            margin-top: -55px;
+        }
+
+        .profile-avatar {
+            width: 112px;
+            height: 112px;
+            font-size: 32px;
+        }
+
+        .profile-name {
+            font-size: 24px;
+        }
+
+        .profile-actions {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+            .profile-actions .btn {
+                flex: 1;
+            }
+
+        .section-card {
+            padding: 20px;
+        }
+
+        .security-footer {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+            .security-footer .btn {
+                width: 100%;
+            }
+    }
+
+    @@media (max-width: 450px) {
+
+        .profile-actions {
+            flex-direction: column;
+        }
+
+            .profile-actions .btn {
+                width: 100%;
+            }
+
+        .profile-name {
+            font-size: 22px;
+        }
+
+        .stat-card {
+            padding: 16px;
+        }
+    }
+
+</style>
+
+
+<div class="profile-page">
+
+    <!-- =====================================================
+         MAIN PROFILE CARD
+    ====================================================== -->
+
+    <div class="profile-main-card">
+
+        <!-- =================================================
+             COVER
+        ================================================== -->
+
+        <div class="profile-cover">
+
+            <div class="cover-circle cover-circle-one"></div>
+
+            <div class="cover-circle cover-circle-two"></div>
+
+            <div class="cover-circle cover-circle-three"></div>
+
+            <div class="cover-content">
+
+                <span class="cover-label">
+
+                    <i class="bi bi-person-circle"></i>
+
+                    My Profile
+
+                </span>
+
+                <div class="cover-heading">
+                    Your Personal Space
+                </div>
+
+                <div class="cover-subtitle">
+                    Manage your account and personal information
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- =================================================
+             PROFILE BODY
+        ================================================== -->
+
+        <div class="profile-body">
+
+            <!-- =================================================
+                 PROFILE HEADER
+            ================================================== -->
+
+            <div class="profile-header">
+
+                <div>
+
+                    <!-- AVATAR -->
+
+                    <div class="avatar-wrapper">
+
+                        <div class="profile-avatar">
+
+                            @if (hasProfileImage)
+                            {
+                                <img src="@Model.ProfileImagePath"
+                                     alt="@Model.FullName"
+                                     onerror="this.style.display='none'; this.parentElement.innerHTML='@initials';" />
+                            }
+                            else
+                            {
+                                @initials
+                            }
+
+                        </div>
+
+                        <div class="online-dot"></div>
+
+                    </div>
+
+
+                    <!-- NAME -->
+
+                    <div class="profile-name">
+
+                        @Model.FullName
+
+                        <i class="bi bi-patch-check-fill verified-icon"
+                           title="Verified User">
+                        </i>
+
+                    </div>
+
+
+                    <!-- EMAIL -->
+
+                    <div class="profile-email">
+
+                        <i class="bi bi-envelope-fill me-1"></i>
+
+                        @Model.Email
+
+                    </div>
+
+
+                    <!-- USER BADGE -->
+
+                    <span class="user-badge">
+
+                        <i class="bi bi-person-check-fill"></i>
+
+                        PG Management User
+
+                    </span>
+
+                </div>
+
+
+                <!-- ACTION BUTTONS -->
+
+                <div class="profile-actions">
+
+                    <a asp-controller="User"
+                       asp-action="Dashboard"
+                       class="btn btn-outline-secondary">
+
+                        <i class="bi bi-grid-1x2-fill me-1"></i>
+
+                        Dashboard
+
+                    </a>
+
+                    <a asp-controller="User"
+                       asp-action="EditProfile"
+                       class="btn btn-primary">
+
+                        <i class="bi bi-pencil-square me-1"></i>
+
+                        Edit Profile
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 STATS
+            ================================================== -->
+
+            <div class="stats-wrapper">
+
+                <div class="row g-3">
+
+                    <!-- ACCOUNT TYPE -->
+
+                    <div class="col-md-4">
+
+                        <div class="stat-card">
+
+                            <div class="stat-top">
+
+                                <div class="stat-icon stat-icon-blue">
+
+                                    <i class="bi bi-person-badge-fill"></i>
+
+                                </div>
+
+                                <i class="bi bi-three-dots text-muted"></i>
+
+                            </div>
+
+                            <div class="stat-number">
+                                User Account
+                            </div>
+
+                            <div class="stat-label">
+                                Account Type
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div class="col-md-4">
+
+                        <div class="stat-card">
+
+                            <div class="stat-top">
+
+                                <div class="stat-icon stat-icon-green">
+
+                                    <i class="bi bi-shield-check"></i>
+
+                                </div>
+
+                                <i class="bi bi-check-circle-fill text-success"></i>
+
+                            </div>
+
+                            <div class="stat-number text-success">
+
+                                @Model.Status
+
+                            </div>
+
+                            <div class="stat-label">
+                                Account Status
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- MEMBER SINCE -->
+
+                    <div class="col-md-4">
+
+                        <div class="stat-card">
+
+                            <div class="stat-top">
+
+                                <div class="stat-icon stat-icon-purple">
+
+                                    <i class="bi bi-calendar3"></i>
+
+                                </div>
+
+                                <i class="bi bi-clock-history text-muted"></i>
+
+                            </div>
+
+                            <div class="stat-number">
+
+                                @Model.CreatedDate.ToString("dd MMM yyyy")
+
+                            </div>
+
+                            <div class="stat-label">
+                                Member Since
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- =================================================
+                 PERSONAL + ACCOUNT
+            ================================================== -->
+
+            <div class="content-grid">
+
+                <div class="row g-4">
+
+                    <!-- =================================================
+                         PERSONAL INFORMATION
+                    ================================================== -->
+
+                    <div class="col-lg-7">
+
+                        <div class="section-card">
+
+                            <div class="section-title">
+
+                                <div class="section-title-icon">
+
+                                    <i class="bi bi-person-vcard-fill"></i>
+
+                                </div>
+
+                                Personal Information
+
+                            </div>
+
+
+                            <!-- FULL NAME -->
+
+                            <div class="info-row">
+
+                                <div class="info-icon">
+
+                                    <i class="bi bi-person-fill"></i>
+
+                                </div>
+
+                                <div>
+
+                                    <div class="info-label">
+                                        Full Name
+                                    </div>
+
+                                    <div class="info-value">
+                                        @Model.FullName
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- EMAIL -->
+
+                            <div class="info-row">
+
+                                <div class="info-icon">
+
+                                    <i class="bi bi-envelope-fill"></i>
+
+                                </div>
+
+                                <div>
+
+                                    <div class="info-label">
+                                        Email Address
+                                    </div>
+
+                                    <div class="info-value">
+                                        @Model.Email
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- PHONE -->
+
+                            <div class="info-row">
+
+                                <div class="info-icon">
+
+                                    <i class="bi bi-telephone-fill"></i>
+
+                                </div>
+
+                                <div>
+
+                                    <div class="info-label">
+                                        Phone Number
+                                    </div>
+
+                                    <div class="info-value">
+
+                                        @if (!string.IsNullOrWhiteSpace(Model.Phone))
+                                        {
+                                            @Model.Phone
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                Not provided
+                                            </span>
+                                        }
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ADDRESS -->
+
+                            <div class="info-row">
+
+                                <div class="info-icon">
+
+                                    <i class="bi bi-geo-alt-fill"></i>
+
+                                </div>
+
+                                <div>
+
+                                    <div class="info-label">
+                                        Address
+                                    </div>
+
+                                    <div class="info-value">
+
+                                        @if (!string.IsNullOrWhiteSpace(Model.Address))
+                                        {
+                                            @Model.Address
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                Not provided
+                                            </span>
+                                        }
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- =================================================
+                         ACCOUNT DETAILS
+                    ================================================== -->
+
+                    <div class="col-lg-5">
+
+                        <div class="section-card">
+
+                            <div class="section-title">
+
+                                <div class="section-title-icon">
+
+                                    <i class="bi bi-shield-lock-fill"></i>
+
+                                </div>
+
+                                Account Details
+
+                            </div>
+
+
+                            <!-- ACCOUNT TYPE -->
+
+                            <div class="info-row">
+
+                                <div class="info-icon">
+
+                                    <i class="bi bi-person-badge-fill"></i>
+
+                                </div>
+
+                                <div>
+
+                                    <div class="info-label">
+                                        Account Type
+                                    </div>
+
+                                    <div class="info-value">
+                                        PG Management User
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- STATUS -->
+
+                            <div class="info-row">
+
+                                <div class="info-icon">
+
+                                    <i class="bi bi-check-circle-fill"></i>
+
+                                </div>
+
+                                <div>
+
+                                    <div class="info-label">
+                                        Account Status
+                                    </div>
+
+                                    <div class="info-value">
+
+                                        <span class="status-badge">
+
+                                            <i class="bi bi-check-circle-fill"></i>
+
+                                            @Model.Status
+
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- MEMBER SINCE -->
+
+                            <div class="info-row">
+
+                                <div class="info-icon">
+
+                                    <i class="bi bi-calendar-check-fill"></i>
+
+                                </div>
+
+                                <div>
+
+                                    <div class="info-label">
+                                        Member Since
+                                    </div>
+
+                                    <div class="info-value">
+                                        @Model.CreatedDate.ToString("dd MMMM yyyy")
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- QUICK LINKS -->
+
+                            <div class="quick-links">
+
+                                <a asp-controller="User"
+                                   asp-action="Dashboard"
+                                   class="quick-link">
+
+                                    <span class="quick-link-left">
+
+                                        <i class="bi bi-grid-1x2-fill"></i>
+
+                                        Dashboard
+
+                                    </span>
+
+                                    <i class="bi bi-chevron-right"></i>
+
+                                </a>
+
+
+                                <a asp-controller="User"
+                                   asp-action="EditProfile"
+                                   class="quick-link">
+
+                                    <span class="quick-link-left">
+
+                                        <i class="bi bi-pencil-square"></i>
+
+                                        Edit Profile
+
+                                    </span>
+
+                                    <i class="bi bi-chevron-right"></i>
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     AADHAAR VERIFICATION
+                ================================================== -->
+
+                <div class="section-card aadhaar-card">
+
+                    <div class="section-title">
+
+                        <div class="section-title-icon">
+
+                            <i class="bi bi-card-heading"></i>
+
+                        </div>
+
+                        Aadhaar Verification
+
+                    </div>
+
+
+                    <!-- SECURITY NOTICE -->
+
+                    <div class="security-alert">
+
+                        <i class="bi bi-shield-lock-fill security-alert-icon"></i>
+
+                        <div>
+
+                            <strong>Privacy & Security</strong>
+
+                            <div class="mt-1">
+
+                                Your Aadhaar information is protected.
+                                Only the masked Aadhaar number is displayed
+                                on your profile.
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="row g-4 mt-1">
+
+                        <!-- =================================================
+                             AADHAAR NUMBER
+                        ================================================== -->
+
+                        <div class="col-md-6">
+
+                            <div class="info-row">
+
+                                <div class="info-icon">
+
+                                    <i class="bi bi-credit-card-2-front-fill"></i>
+
+                                </div>
+
+                                <div>
+
+                                    <div class="info-label">
+                                        Aadhaar Number
+                                    </div>
+
+                                    <div class="info-value aadhaar-value">
+
+                                        @maskedAadhaar
+
+                                    </div>
+
+                                    @if (hasAadhaar)
+                                    {
+                                        <small class="text-success">
+
+                                            <i class="bi bi-check-circle-fill"></i>
+
+                                            Aadhaar number added
+
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <small class="text-muted">
+
+                                            <i class="bi bi-info-circle"></i>
+
+                                            Aadhaar number not added
+
+                                        </small>
+                                    }
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- =================================================
+                             AADHAAR DOCUMENT
+                        ================================================== -->
+
+                        <div class="col-md-6">
+
+                            <div class="info-row">
+
+                                <div class="info-icon">
+
+                                    <i class="bi bi-file-earmark-image-fill"></i>
+
+                                </div>
+
+                                <div>
+
+                                    <div class="info-label">
+                                        Aadhaar Document
+                                    </div>
+
+                                    <div class="info-value">
+
+                                        @if (hasAadhaarDocument)
+                                        {
+                                            <span class="document-status document-uploaded">
+
+                                                <i class="bi bi-check-circle-fill"></i>
+
+                                                Document Uploaded
+
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="document-status document-not-uploaded">
+
+                                                <i class="bi bi-exclamation-circle"></i>
+
+                                                Not Uploaded
+
+                                            </span>
+                                        }
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- UPDATE BUTTON -->
+
+                    <div class="security-footer">
+
+                        <div class="security-text">
+
+                            <i class="bi bi-shield-check-fill me-1"></i>
+
+                            Your personal information is protected.
+
+                        </div>
+
+                        <a asp-controller="User"
+                           asp-action="EditProfile"
+                           class="btn btn-outline-primary">
+
+                            <i class="bi bi-pencil-square me-1"></i>
+
+                            Update Profile & Aadhaar
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =================================================
+                     BOTTOM
+                ================================================== -->
+
+                <div class="d-flex justify-content-between
+                    align-items-center
+                    flex-wrap
+                    gap-2
+                    mt-4">
+
+                    <div class="security-text">
+
+                        <i class="bi bi-check-circle-fill me-1"></i>
+
+                        Profile information is up to date.
+
+                    </div>
+
+                    <a asp-controller="User"
+                       asp-action="Dashboard"
+                       class="btn btn-secondary">
+
+                        <i class="bi bi-arrow-left me-1"></i>
+
+                        Back to Dashboard
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

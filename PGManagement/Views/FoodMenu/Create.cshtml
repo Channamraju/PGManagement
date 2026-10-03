@@ -1,0 +1,591 @@
+﻿@model PGManagement.Models.FoodMenu
+
+@{
+    ViewData["Title"] = "Create Food Menu";
+
+    var pgs = ViewBag.PGs as IEnumerable<PGManagement.Models.PG>
+              ?? Enumerable.Empty<PGManagement.Models.PG>();
+}
+
+<div class="container py-4">
+
+    <!-- HEADER -->
+    <div class="page-header">
+
+        <div class="header-left">
+
+            <a asp-controller="FoodMenu"
+               asp-action="Manage"
+               class="back-btn">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+
+            <div class="header-icon">
+                <i class="bi bi-egg-fried"></i>
+            </div>
+
+            <div>
+                <h2>Create Food Menu</h2>
+                <p>Add a new food item for your PG</p>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- FORM CARD -->
+    <div class="form-card">
+
+        <div class="form-header">
+
+            <div class="form-header-icon">
+                <i class="bi bi-plus-circle"></i>
+            </div>
+
+            <div>
+                <h4>Add Food Item</h4>
+                <p>
+                    Enter the food details below.
+                </p>
+            </div>
+
+        </div>
+
+
+        <form asp-controller="FoodMenu"
+              asp-action="Create"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-danger mb-3">
+            </div>
+
+
+            <!-- PG -->
+            <div class="form-group">
+
+                <label asp-for="PGId" class="form-label">
+                    <i class="bi bi-building"></i>
+                    Select PG
+                </label>
+
+                <select asp-for="PGId"
+                        class="form-select">
+
+                    <option value="">
+                        -- Select PG --
+                    </option>
+
+                    @foreach (var pg in pgs)
+                    {
+                        <option value="@pg.PGId">
+                            @pg.PGName - @pg.City
+                        </option>
+                    }
+
+                </select>
+
+                <span asp-validation-for="PGId"
+                      class="text-danger">
+                </span>
+
+            </div>
+            <!-- DAY -->
+            <div class="form-group">
+
+                <label asp-for="DayOfWeek" class="form-label">
+                    <i class="bi bi-calendar-week"></i>
+                    Day
+                </label>
+
+                <select asp-for="DayOfWeek"
+                        class="form-select">
+
+                    <option value="">
+                        -- Select Day --
+                    </option>
+
+                    <option value="Monday">
+                        Monday
+                    </option>
+
+                    <option value="Tuesday">
+                        Tuesday
+                    </option>
+
+                    <option value="Wednesday">
+                        Wednesday
+                    </option>
+
+                    <option value="Thursday">
+                        Thursday
+                    </option>
+
+                    <option value="Friday">
+                        Friday
+                    </option>
+
+                    <option value="Saturday">
+                        Saturday
+                    </option>
+
+                    <option value="Sunday">
+                        Sunday
+                    </option>
+
+                </select>
+
+                <span asp-validation-for="DayOfWeek"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- ITEM NAME -->
+            <div class="form-group">
+
+                <label asp-for="ItemName"
+                       class="form-label">
+
+                    <i class="bi bi-card-text"></i>
+                    Food Item Name
+
+                </label>
+
+                <input asp-for="ItemName"
+                       class="form-control"
+                       placeholder="Example: Idli, Rice, Chapati..." />
+
+                <span asp-validation-for="ItemName"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- MEAL TYPE -->
+            <div class="form-group">
+
+                <label asp-for="MealType"
+                       class="form-label">
+
+                    <i class="bi bi-clock"></i>
+                    Meal Type
+
+                </label>
+
+                <select asp-for="MealType"
+                        class="form-select">
+
+                    <option value="">
+                        -- Select Meal Type --
+                    </option>
+
+                    <option value="Breakfast">
+                        🌅 Breakfast
+                    </option>
+
+                    <option value="Lunch">
+                        ☀️ Lunch
+                    </option>
+
+                    <option value="Dinner">
+                        🌙 Dinner
+                    </option>
+
+                    <option value="Snacks">
+                        🍪 Snacks
+                    </option>
+
+                </select>
+
+                <span asp-validation-for="MealType"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            <!-- DESCRIPTION -->
+            <div class="form-group">
+
+                <label asp-for="Description"
+                       class="form-label">
+
+                    <i class="bi bi-chat-left-text"></i>
+                    Description
+
+                </label>
+
+                <textarea asp-for="Description"
+                          class="form-control"
+                          rows="4"
+                          placeholder="Enter food description..."></textarea>
+
+                <span asp-validation-for="Description"
+                      class="text-danger">
+                </span>
+
+            </div>
+
+
+            
+
+
+            <!-- AVAILABILITY -->
+            <div class="availability-box">
+
+                <div class="availability-content">
+
+                    <div class="availability-icon">
+                        <i class="bi bi-toggle-on"></i>
+                    </div>
+
+                    <div>
+
+                        <strong>
+                            Food Availability
+                        </strong>
+
+                        <p>
+                            Allow users to see this food item
+                            as available.
+                        </p>
+
+                    </div>
+
+                </div>
+
+                <div class="form-check form-switch">
+
+                    <input asp-for="IsAvailable"
+                           class="form-check-input"
+                           role="switch"
+                           id="availableSwitch" />
+
+                    <label class="form-check-label"
+                           for="availableSwitch">
+
+                        Available
+
+                    </label>
+
+                </div>
+
+            </div>
+
+
+            <!-- BUTTONS -->
+            <div class="form-actions">
+
+                <a asp-controller="FoodMenu"
+                   asp-action="Manage"
+                   class="btn btn-light">
+
+                    <i class="bi bi-x-lg"></i>
+                    Cancel
+
+                </a>
+
+                <button type="submit"
+                        class="btn btn-primary">
+
+                    <i class="bi bi-check-lg"></i>
+                    Create Menu
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    body {
+        background: #f5f7fb;
+    }
+
+
+    /* =========================
+           HEADER
+           ========================= */
+
+    .page-header {
+        margin-bottom: 25px;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .back-btn {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        color: #495057;
+        text-decoration: none;
+        border: 1px solid #e1e5ea;
+        transition: .2s;
+    }
+
+        .back-btn:hover {
+            background: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+        }
+
+    .header-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 14px;
+        background: #0d6efd;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+    }
+
+    .page-header h2 {
+        margin: 0;
+        font-weight: 750;
+        color: #212529;
+    }
+
+    .page-header p {
+        margin: 4px 0 0;
+        color: #6c757d;
+    }
+
+
+    /* =========================
+           FORM CARD
+           ========================= */
+
+    .form-card {
+        max-width: 800px;
+        margin: auto;
+        background: white;
+        border-radius: 18px;
+        padding: 30px;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, .06);
+    }
+
+
+    /* =========================
+           FORM HEADER
+           ========================= */
+
+    .form-header {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding-bottom: 22px;
+        margin-bottom: 25px;
+        border-bottom: 1px solid #eee;
+    }
+
+    .form-header-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 11px;
+        background: #eef4ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .form-header h4 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .form-header p {
+        margin: 3px 0 0;
+        color: #6c757d;
+        font-size: 13px;
+    }
+
+
+    /* =========================
+           FORM GROUP
+           ========================= */
+
+    .form-group {
+        margin-bottom: 21px;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #343a40;
+        margin-bottom: 8px;
+    }
+
+        .form-label i {
+            color: #0d6efd;
+            margin-right: 5px;
+        }
+
+    .form-control,
+    .form-select {
+        min-height: 46px;
+        border-radius: 9px;
+        border: 1px solid #dfe3e8;
+    }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .10);
+        }
+
+    textarea.form-control {
+        min-height: auto;
+        resize: vertical;
+    }
+
+    .input-group-text {
+        background: #f8f9fa;
+        border-color: #dfe3e8;
+        font-weight: 600;
+    }
+
+
+    /* =========================
+           AVAILABILITY
+           ========================= */
+
+    .availability-box {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 13px;
+        padding: 17px;
+        margin-top: 5px;
+        margin-bottom: 25px;
+    }
+
+    .availability-content {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .availability-icon {
+        width: 43px;
+        height: 43px;
+        border-radius: 10px;
+        background: #d1e7dd;
+        color: #198754;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+    }
+
+    .availability-content strong {
+        display: block;
+        color: #212529;
+    }
+
+    .availability-content p {
+        margin: 3px 0 0;
+        color: #6c757d;
+        font-size: 12px;
+    }
+
+    .form-switch .form-check-input {
+        width: 42px;
+        height: 22px;
+        cursor: pointer;
+    }
+
+    .form-switch .form-check-label {
+        margin-left: 5px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+
+    /* =========================
+           BUTTONS
+           ========================= */
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 5px;
+    }
+
+        .form-actions .btn {
+            min-width: 130px;
+            padding: 10px 17px;
+            border-radius: 9px;
+            font-weight: 600;
+        }
+
+
+    /* =========================
+           MOBILE
+           ========================= */
+
+    @@media (max-width: 600px) {
+
+        .form-card {
+            padding: 20px;
+        }
+
+        .header-left {
+            align-items: flex-start;
+        }
+
+        .header-icon {
+            width: 48px;
+            height: 48px;
+        }
+
+        .availability-box {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+    }
+
+</style>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

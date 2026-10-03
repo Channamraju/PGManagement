@@ -1,0 +1,232 @@
+﻿@model IEnumerable<PGManagement.Models.PG>
+
+@{
+    ViewData["Title"] = "Pending PGs";
+}
+
+<div class="container mt-4">
+
+    <!-- Header -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="fw-bold">
+                <i class="bi bi-hourglass-split"></i>
+                Pending PGs
+            </h2>
+
+            <p class="text-muted mb-0">
+                Review PGs submitted by owners.
+            </p>
+        </div>
+
+        <a asp-controller="Admin"
+           asp-action="Dashboard"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+            Dashboard
+
+        </a>
+
+    </div>
+
+
+    <!-- Success Message -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+
+            <i class="bi bi-check-circle"></i>
+
+            @TempData["Success"]
+
+        </div>
+    }
+
+
+    <!-- Pending PGs -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row g-4">
+
+            @foreach (var pg in Model)
+            {
+                <div class="col-md-6 col-lg-4">
+
+                    <div class="card shadow-sm h-100">
+
+                        <div class="card-header
+                            d-flex
+                            justify-content-between
+                            align-items-center">
+
+                            <strong>
+                                @pg.PGName
+                            </strong>
+
+                            <span class="badge bg-warning text-dark">
+                                Pending
+                            </span>
+
+                        </div>
+
+
+                        <div class="card-body">
+
+                            <p>
+                                <strong>
+                                    <i class="bi bi-geo-alt"></i>
+                                    City:
+                                </strong>
+
+                                @pg.City
+                            </p>
+
+
+                            <p>
+                                <strong>
+                                    <i class="bi bi-house"></i>
+                                    Address:
+                                </strong>
+
+                                @pg.Address
+                            </p>
+
+
+                            <p>
+                                <strong>
+                                    <i class="bi bi-gender-ambiguous"></i>
+                                    Gender:
+                                </strong>
+
+                                @pg.GenderType
+                            </p>
+
+
+                            <p>
+                                <strong>
+                                    <i class="bi bi-person"></i>
+                                    Owner:
+                                </strong>
+
+                                @if (pg.Owner != null)
+                                {
+                                    @pg.Owner.FullName
+                                }
+                                else
+                                {
+                                    <span>Unknown</span>
+                                }
+                            </p>
+
+
+                            @if (!string.IsNullOrWhiteSpace(pg.Description))
+                            {
+                                <hr />
+
+                                <p class="text-muted">
+                                    @pg.Description
+                                </p>
+                            }
+
+                        </div>
+
+
+                        <!-- Actions -->
+
+                        <div class="card-footer bg-white">
+
+                            <div class="row g-2">
+
+                                <!-- Approve -->
+
+                                <div class="col-6">
+
+                                    <form asp-controller="Admin"
+                                          asp-action="ApprovePG"
+                                          method="post">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="id"
+                                               value="@pg.PGId" />
+
+                                        <button type="submit"
+                                                class="btn btn-success w-100">
+
+                                            <i class="bi bi-check-lg"></i>
+
+                                            Approve
+
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+
+                                <!-- Reject -->
+
+                                <div class="col-6">
+
+                                    <form asp-controller="Admin"
+                                          asp-action="RejectPG"
+                                          method="post">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="id"
+                                               value="@pg.PGId" />
+
+                                        <button type="submit"
+                                                class="btn btn-danger w-100">
+
+                                            <i class="bi bi-x-lg"></i>
+
+                                            Reject
+
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+
+            <div class="card-body text-center py-5">
+
+                <i class="bi bi-check-circle"
+                   style="font-size: 60px;">
+                </i>
+
+                <h4 class="mt-3">
+                    No Pending PGs
+                </h4>
+
+                <p class="text-muted">
+                    There are no PGs waiting for approval.
+                </p>
+
+            </div>
+
+        </div>
+    }
+
+</div>

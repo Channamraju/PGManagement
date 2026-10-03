@@ -1,0 +1,528 @@
+﻿@model PGManagement.Models.Owner
+
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<div class="edit-page">
+
+    <div class="edit-container">
+
+        <!-- HEADER -->
+
+        <div class="edit-header">
+
+            <a asp-controller="Owner"
+               asp-action="Profile"
+               class="back-link">
+
+                <i class="bi bi-arrow-left"></i>
+
+                Back to Profile
+
+            </a>
+
+            <h2>
+
+                <i class="bi bi-person-gear"></i>
+
+                Edit Profile
+
+            </h2>
+
+            <p>
+                Update your personal information and profile photo.
+            </p>
+
+        </div>
+
+
+        <!-- FORM -->
+
+        <div class="edit-card">
+
+            <form asp-controller="Owner"
+                  asp-action="EditProfile"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       asp-for="OwnerId" />
+
+                <input type="hidden"
+                       asp-for="Email" />
+
+                <input type="hidden"
+                       asp-for="PasswordHash" />
+
+                <!-- PROFILE PHOTO -->
+
+                <div class="photo-section">
+
+                    <div class="current-photo">
+
+                        @if (!string.IsNullOrEmpty(Model.ProfileImagePath))
+                        {
+                            <img id="previewImage"
+                                 src="@Model.ProfileImagePath"
+                                 alt="@Model.FullName" />
+                        }
+                        else
+                        {
+                            <div id="previewPlaceholder"
+                                 class="photo-placeholder">
+
+                                @Model.FullName
+                                .Substring(0, 1)
+                                .ToUpper()
+
+                            </div>
+
+                            <img id="previewImage"
+                                 src=""
+                                 style="display:none;"
+                                 alt="Preview" />
+                        }
+
+                    </div>
+
+                    <div class="photo-content">
+
+                        <h5>Profile Photo</h5>
+
+                        <p>
+                            JPG, JPEG, PNG or WEBP.
+                            Maximum 5 MB.
+                        </p>
+
+                        <label class="upload-btn">
+
+                            <i class="bi bi-camera"></i>
+
+                            Choose Photo
+
+                            <input type="file"
+                                   name="ProfileImage"
+                                   id="ProfileImage"
+                                   accept=".jpg,.jpeg,.png,.webp,image/*"
+                                   hidden />
+
+                        </label>
+
+                        <div asp-validation-for="ProfileImage"
+                             class="text-danger mt-2">
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <hr />
+
+
+                <!-- FULL NAME -->
+
+                <div class="form-group">
+
+                    <label asp-for="FullName">
+                        Full Name
+                    </label>
+
+                    <div class="input-box">
+
+                        <i class="bi bi-person"></i>
+
+                        <input asp-for="FullName"
+                               class="form-control"
+                               placeholder="Enter your full name" />
+
+                    </div>
+
+                    <span asp-validation-for="FullName"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- EMAIL -->
+
+                <div class="form-group">
+
+                    <label>
+                        Email
+                    </label>
+
+                    <div class="input-box disabled-box">
+
+                        <i class="bi bi-envelope"></i>
+
+                        <input asp-for="Email"
+                               class="form-control"
+                               readonly />
+
+                    </div>
+
+                    <small class="help-text">
+                        Email cannot be changed here.
+                    </small>
+
+                </div>
+
+
+                <!-- PHONE -->
+
+                <div class="form-group">
+
+                    <label asp-for="Phone">
+                        Phone Number
+                    </label>
+
+                    <div class="input-box">
+
+                        <i class="bi bi-telephone"></i>
+
+                        <input asp-for="Phone"
+                               class="form-control"
+                               placeholder="Enter phone number" />
+
+                    </div>
+
+                    <span asp-validation-for="Phone"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- ADDRESS -->
+
+                <div class="form-group">
+
+                    <label asp-for="Address">
+                        Address
+                    </label>
+
+                    <div class="input-box textarea-box">
+
+                        <i class="bi bi-geo-alt"></i>
+
+                        <textarea asp-for="Address"
+                                  class="form-control"
+                                  rows="4"
+                                  placeholder="Enter your address"></textarea>
+
+                    </div>
+
+                    <span asp-validation-for="Address"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- BUTTONS -->
+
+                <div class="form-actions">
+
+                    <a asp-controller="Owner"
+                       asp-action="Profile"
+                       class="cancel-btn">
+
+                        Cancel
+
+                    </a>
+
+                    <button type="submit"
+                            class="save-btn">
+
+                        <i class="bi bi-check-lg"></i>
+
+                        Save Changes
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    document
+        .getElementById("ProfileImage")
+        .addEventListener("change", function(event) {
+
+            const file = event.target.files[0];
+
+            if (!file)
+                return;
+
+            const image =
+                document.getElementById("previewImage");
+
+            const placeholder =
+                document.getElementById("previewPlaceholder");
+
+            image.src =
+                URL.createObjectURL(file);
+
+            image.style.display = "block";
+
+            if (placeholder) {
+                placeholder.style.display = "none";
+            }
+        });
+
+</script>
+
+
+<style>
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        background: #f5f7fb;
+    }
+
+    .edit-page {
+        min-height: 100vh;
+        padding: 40px 15px;
+    }
+
+    .edit-container {
+        max-width: 850px;
+        margin: auto;
+    }
+
+    /* HEADER */
+
+    .edit-header {
+        margin-bottom: 25px;
+    }
+
+    .back-link {
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 20px;
+    }
+
+        .back-link:hover {
+            color: #2563eb;
+        }
+
+    .edit-header h2 {
+        margin: 0;
+        color: #111827;
+        font-weight: 700;
+    }
+
+        .edit-header h2 i {
+            color: #2563eb;
+        }
+
+    .edit-header p {
+        color: #64748b;
+        margin-top: 7px;
+    }
+
+    /* CARD */
+
+    .edit-card {
+        background: white;
+        border-radius: 20px;
+        padding: 35px;
+        box-shadow: 0 10px 35px rgba(0,0,0,.08);
+    }
+
+    /* PHOTO */
+
+    .photo-section {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        margin-bottom: 30px;
+    }
+
+    .current-photo {
+        width: 120px;
+        height: 120px;
+        min-width: 120px;
+    }
+
+        .current-photo img,
+        .photo-placeholder {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+        }
+
+        .current-photo img {
+            object-fit: cover;
+        }
+
+    .photo-placeholder {
+        background: linear-gradient( 135deg, #2563eb, #7c3aed );
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 38px;
+        font-weight: 700;
+    }
+
+    .photo-content h5 {
+        margin-bottom: 5px;
+        font-weight: 700;
+    }
+
+    .photo-content p {
+        color: #94a3b8;
+        font-size: 14px;
+    }
+
+    .upload-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 17px;
+        border-radius: 10px;
+        background: #eef2ff;
+        color: #4338ca;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .upload-btn:hover {
+            background: #e0e7ff;
+        }
+
+    /* FORM */
+
+    .form-group {
+        margin-top: 25px;
+    }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+    .input-box {
+        display: flex;
+        align-items: center;
+        border: 1px solid #dbe1ea;
+        border-radius: 11px;
+        padding-left: 14px;
+        background: white;
+    }
+
+        .input-box > i {
+            color: #64748b;
+        }
+
+        .input-box .form-control {
+            border: none;
+            box-shadow: none;
+        }
+
+        .input-box:focus-within {
+            border-color: #2563eb;
+        }
+
+    .textarea-box {
+        align-items: flex-start;
+        padding-top: 12px;
+    }
+
+    .disabled-box {
+        background: #f8fafc;
+    }
+
+    .help-text {
+        color: #94a3b8;
+    }
+
+    /* ACTIONS */
+
+    .form-actions {
+        margin-top: 35px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+
+    .cancel-btn,
+    .save-btn {
+        border: none;
+        padding: 12px 22px;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .cancel-btn {
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+    .save-btn {
+        background: #2563eb;
+        color: white;
+    }
+
+        .save-btn:hover {
+            background: #1d4ed8;
+        }
+
+    /* MOBILE */
+
+    @@media (max-width: 600px) {
+
+        .edit-card {
+            padding: 22px;
+        }
+
+        .photo-section {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+        .cancel-btn,
+        .save-btn {
+            text-align: center;
+            width: 100%;
+        }
+    }
+
+</style>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

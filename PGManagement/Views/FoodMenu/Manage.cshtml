@@ -1,0 +1,1061 @@
+﻿@model IEnumerable<PGManagement.Models.FoodMenu>
+
+@{
+    ViewData["Title"] = "Manage Food Menu";
+
+    var pgs = ViewBag.PGs as IEnumerable<PGManagement.Models.PG>
+              ?? Enumerable.Empty<PGManagement.Models.PG>();
+
+    int? selectedPG = ViewBag.SelectedPG as int?;
+}
+
+<div class="container py-4">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+
+        <div class="header-left">
+
+            <div class="header-icon">
+                <i class="bi bi-egg-fried"></i>
+            </div>
+
+            <div>
+                <h2>Manage Food Menu</h2>
+                <p>Create, update and manage food items for your PG</p>
+            </div>
+
+        </div>
+
+        <a asp-controller="FoodMenu"
+           asp-action="Create"
+           asp-route-pgId="@selectedPG"
+           class="btn btn-primary create-btn">
+
+            <i class="bi bi-plus-lg"></i>
+            Create Menu
+
+        </a>
+
+    </div>
+
+
+    <!-- ALERTS -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+
+            <i class="bi bi-check-circle-fill"></i>
+
+            <span>@TempData["Success"]</span>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">
+
+            <i class="bi bi-exclamation-triangle-fill"></i>
+
+            <span>@TempData["Error"]</span>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    <!-- PG SELECTOR -->
+
+    <div class="filter-card">
+
+        <div class="filter-title">
+
+            <div class="filter-icon">
+                <i class="bi bi-building"></i>
+            </div>
+
+            <div>
+                <h5>Select PG</h5>
+
+                <small>
+                    Select a PG to manage its food menu
+                </small>
+            </div>
+
+        </div>
+
+
+        <form asp-controller="FoodMenu"
+              asp-action="Manage"
+              method="get"
+              class="pg-form">
+
+            <select name="pgId"
+                    class="form-select">
+
+                <option value="">
+                    All My PGs
+                </option>
+
+                @foreach (var pg in pgs)
+                {
+                    if (selectedPG == pg.PGId)
+                    {
+                        <option value="@pg.PGId" selected>
+                            @pg.PGName - @pg.City
+                        </option>
+                    }
+                    else
+                    {
+                        <option value="@pg.PGId">
+                            @pg.PGName - @pg.City
+                        </option>
+                    }
+                }
+
+            </select>
+
+            <button type="submit"
+                    class="btn btn-dark">
+
+                <i class="bi bi-funnel"></i>
+                Filter
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- MENU HEADING -->
+
+    <div class="menu-heading">
+
+        <div>
+
+            <h4>
+                Food Items
+            </h4>
+
+            <p>
+                @Model.Count() menu item(s)
+            </p>
+
+        </div>
+
+        @if (selectedPG.HasValue)
+        {
+            <a asp-controller="FoodMenu"
+               asp-action="Create"
+               asp-route-pgId="@selectedPG"
+               class="btn btn-success">
+
+                <i class="bi bi-plus-circle"></i>
+                Add Food Item
+
+            </a>
+        }
+
+    </div>
+
+
+    @if (!Model.Any())
+    {
+        <!-- EMPTY STATE -->
+
+        <div class="empty-card">
+
+            <div class="empty-icon">
+                <i class="bi bi-egg-fried"></i>
+            </div>
+
+            <h3>No Menu Items Found</h3>
+
+            <p>
+                There are no food menu items for the selected PG.
+                Create your first food item to display it to users.
+            </p>
+
+            <a asp-controller="FoodMenu"
+               asp-action="Create"
+               asp-route-pgId="@selectedPG"
+               class="btn btn-primary">
+
+                <i class="bi bi-plus-lg"></i>
+                Create First Menu
+
+            </a>
+
+        </div>
+    }
+    else
+    {
+        <!-- MENU LIST -->
+
+        <div class="menu-grid">
+
+            @foreach (var item in Model)
+            {
+                <div class="food-card">
+
+                    <!-- TOP -->
+
+                    <div class="food-top">
+
+                        <div class="food-icon">
+
+                            @if (item.MealType == "Breakfast")
+                            {
+                                <i class="bi bi-cup-hot-fill"></i>
+                            }
+                            else if (item.MealType == "Lunch")
+                            {
+                                <i class="bi bi-egg-fried"></i>
+                            }
+                            else if (item.MealType == "Dinner")
+                            {
+                                <i class="bi bi-bowl-hot-fill"></i>
+                            }
+                            else
+                            {
+                                <i class="bi bi-cookie"></i>
+                            }
+
+                        </div>
+
+
+                        <div class="food-actions">
+
+                            <!-- EDIT -->
+
+                            <a asp-controller="FoodMenu"
+                               asp-action="Edit"
+                               asp-route-id="@item.FoodMenuId"
+                               class="action-btn edit-btn"
+                               title="Edit">
+
+                                <i class="bi bi-pencil-square"></i>
+
+                            </a>
+
+
+                            <!-- DELETE -->
+
+                            <form asp-controller="FoodMenu"
+                                  asp-action="Delete"
+                                  asp-route-id="@item.FoodMenuId"
+                                  method="post"
+                                  class="delete-form">
+
+                                @Html.AntiForgeryToken()
+
+                                <button type="submit"
+                                        class="action-btn delete-btn"
+                                        title="Delete"
+                                        onclick="return confirmDelete('@item.ItemName');">
+
+                                    <i class="bi bi-trash3"></i>
+
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- FOOD INFORMATION -->
+
+                    <div class="food-content">
+
+                        <!-- DAY + MEAL + AVAILABILITY -->
+
+                        <div class="badges">
+
+                            <!-- DAY -->
+
+                            <span class="day-badge">
+
+                                <i class="bi bi-calendar-week"></i>
+
+                                @item.DayOfWeek
+
+                            </span>
+
+
+                            <!-- MEAL TYPE -->
+                            @if (item.MealType == "Breakfast")
+                            {
+                                <span class="meal-badge breakfast">
+
+                                    <i class="bi bi-sunrise"></i>
+
+                                    Breakfast
+
+                                </span>
+                            }
+                            else if (item.MealType == "Lunch")
+                            {
+                                <span class="meal-badge lunch">
+
+                                    <i class="bi bi-sun"></i>
+
+                                    Lunch
+
+                                </span>
+                            }
+                            else if (item.MealType == "Dinner")
+                            {
+                                <span class="meal-badge dinner">
+
+                                    <i class="bi bi-moon-stars"></i>
+
+                                    Dinner
+
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="meal-badge snacks">
+
+                                    <i class="bi bi-cookie"></i>
+
+                                    @item.MealType
+
+                                </span>
+                            }
+
+
+                            <!-- AVAILABILITY -->
+                            @if (item.IsAvailable)
+                            {
+                                <span class="availability available">
+
+                                    <i class="bi bi-check-circle-fill"></i>
+
+                                    Available
+
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="availability unavailable">
+
+                                    <i class="bi bi-x-circle-fill"></i>
+
+                                    Unavailable
+
+                                </span>
+                            }
+
+                        </div>
+
+
+                        <!-- FOOD NAME -->
+
+                        <h3>
+                            @item.ItemName
+                        </h3>
+
+
+                        <!-- DESCRIPTION -->
+                        @if (!string.IsNullOrWhiteSpace(item.Description))
+                        {
+                            <p class="description">
+                                @item.Description
+                            </p>
+                        }
+                        else
+                        {
+                            <p class="description no-description">
+                                No description added.
+                            </p>
+                        }
+
+
+                        <!-- PG -->
+                        @if (item.PG != null)
+                        {
+                            <div class="pg-info">
+
+                                <i class="bi bi-building"></i>
+
+                                <span>
+                                    @item.PG.PGName
+                                </span>
+
+                                <small>
+                                    @item.PG.City
+                                </small>
+
+                            </div>
+                        }
+
+
+                        <!-- BOTTOM -->
+
+                        <div class="food-bottom">
+
+                            <!-- DAY INFORMATION -->
+
+                            <div class="day-info">
+
+                                <i class="bi bi-calendar3"></i>
+
+                                <span>
+                                    @item.DayOfWeek
+                                </span>
+
+                            </div>
+
+
+                            <!-- AVAILABILITY TOGGLE DISPLAY -->
+
+                            <div class="availability-switch">
+
+                                <span>
+                                    @(item.IsAvailable
+                                        ? "Available"
+                                        : "Unavailable")
+                                </span>
+
+                                <div class="toggle
+                                    @(item.IsAvailable
+                                        ? "toggle-on"
+                                        : "toggle-off")">
+
+                                    <div class="toggle-circle"></div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+
+</div>
+
+
+<script>
+
+    function confirmDelete(itemName) {
+
+        return confirm(
+            "Are you sure you want to delete \"" +
+            itemName +
+            "\" from the food menu?"
+        );
+
+    }
+
+</script>
+
+
+<style>
+
+    body {
+        background: #f5f7fb;
+    }
+
+
+    /* =========================
+           PAGE HEADER
+        ========================= */
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        margin-bottom: 28px;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .header-icon {
+        width: 58px;
+        height: 58px;
+        border-radius: 15px;
+        background: #0d6efd;
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 27px;
+        box-shadow: 0 8px 20px rgba(13, 110, 253, .20);
+    }
+
+    .page-header h2 {
+        margin: 0;
+        font-weight: 750;
+        color: #212529;
+    }
+
+    .page-header p {
+        margin: 4px 0 0;
+        color: #6c757d;
+    }
+
+    .create-btn {
+        padding: 11px 18px;
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+
+    /* =========================
+           FILTER
+        ========================= */
+
+    .filter-card {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 28px;
+        box-shadow: 0 5px 22px rgba(0, 0, 0, .04);
+    }
+
+    .filter-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+
+    .filter-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: #eef4ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+    }
+
+    .filter-title h5 {
+        margin: 0;
+        font-weight: 700;
+    }
+
+    .filter-title small {
+        color: #6c757d;
+    }
+
+    .pg-form {
+        display: flex;
+        gap: 10px;
+    }
+
+        .pg-form .form-select {
+            height: 45px;
+            border-radius: 9px;
+            flex: 1;
+        }
+
+        .pg-form .btn {
+            min-width: 105px;
+            border-radius: 9px;
+            font-weight: 600;
+        }
+
+
+    /* =========================
+           MENU HEADING
+        ========================= */
+
+    .menu-heading {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 18px;
+    }
+
+        .menu-heading h4 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .menu-heading p {
+            margin: 3px 0 0;
+            color: #6c757d;
+            font-size: 13px;
+        }
+
+        .menu-heading .btn {
+            border-radius: 9px;
+            font-weight: 600;
+        }
+
+
+    /* =========================
+           MENU GRID
+        ========================= */
+
+    .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 22px;
+    }
+
+
+    /* =========================
+           FOOD CARD
+        ========================= */
+
+    .food-card {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, .05);
+        transition: all .25s ease;
+    }
+
+        .food-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, .09);
+        }
+
+
+    /* =========================
+           FOOD TOP
+        ========================= */
+
+    .food-top {
+        height: 125px;
+        background: #eef4ff;
+        padding: 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .food-icon {
+        width: 65px;
+        height: 65px;
+        border-radius: 16px;
+        background: white;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 31px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, .06);
+    }
+
+
+    /* =========================
+           ACTION BUTTONS
+        ========================= */
+
+    .food-actions {
+        display: flex;
+        gap: 7px;
+    }
+
+    .action-btn {
+        width: 38px;
+        height: 38px;
+        border: 0;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: .2s;
+    }
+
+    .edit-btn {
+        background: white;
+        color: #0d6efd;
+    }
+
+        .edit-btn:hover {
+            background: #0d6efd;
+            color: white;
+        }
+
+    .delete-btn {
+        background: white;
+        color: #dc3545;
+        cursor: pointer;
+    }
+
+        .delete-btn:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+    .delete-form {
+        margin: 0;
+    }
+
+
+    /* =========================
+           FOOD CONTENT
+        ========================= */
+
+    .food-content {
+        padding: 20px;
+    }
+
+    .badges {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 7px;
+        margin-bottom: 13px;
+    }
+
+
+    /* =========================
+           DAY BADGE
+        ========================= */
+
+    .day-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 5px 10px;
+        border-radius: 20px;
+        background: #fff3cd;
+        color: #997404;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+
+    /* =========================
+           MEAL BADGES
+        ========================= */
+
+    .meal-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .breakfast {
+        background: #fff3cd;
+        color: #997404;
+    }
+
+    .lunch {
+        background: #cff4fc;
+        color: #087990;
+    }
+
+    .dinner {
+        background: #e2d9f3;
+        color: #59359a;
+    }
+
+    .snacks {
+        background: #f8d7da;
+        color: #b02a37;
+    }
+
+
+    /* =========================
+           AVAILABILITY
+        ========================= */
+
+    .availability {
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .available {
+        color: #198754;
+    }
+
+    .unavailable {
+        color: #dc3545;
+    }
+
+
+    /* =========================
+           NAME
+        ========================= */
+
+    .food-content h3 {
+        margin: 0 0 8px;
+        font-size: 19px;
+        font-weight: 750;
+        color: #212529;
+    }
+
+
+    /* =========================
+           DESCRIPTION
+        ========================= */
+
+    .description {
+        color: #6c757d;
+        font-size: 13px;
+        line-height: 1.55;
+        min-height: 40px;
+        margin-bottom: 16px;
+    }
+
+    .no-description {
+        font-style: italic;
+        color: #adb5bd;
+    }
+
+
+    /* =========================
+           PG
+        ========================= */
+
+    .pg-info {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 11px;
+        background: #f8f9fa;
+        border-radius: 9px;
+        margin-bottom: 16px;
+        font-size: 12px;
+        color: #495057;
+    }
+
+        .pg-info i {
+            color: #0d6efd;
+        }
+
+        .pg-info span {
+            font-weight: 600;
+        }
+
+        .pg-info small {
+            margin-left: auto;
+            color: #8a8f98;
+        }
+
+
+    /* =========================
+           BOTTOM
+        ========================= */
+
+    .food-bottom {
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+    }
+
+
+    /* =========================
+           DAY INFO
+        ========================= */
+
+    .day-info {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #6c757d;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+        .day-info i {
+            color: #0d6efd;
+        }
+
+
+    /* =========================
+           TOGGLE DISPLAY
+        ========================= */
+
+    .availability-switch {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+        .availability-switch > span {
+            color: #6c757d;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+    .toggle {
+        width: 38px;
+        height: 21px;
+        border-radius: 20px;
+        padding: 2px;
+        display: flex;
+        align-items: center;
+    }
+
+    .toggle-on {
+        background: #198754;
+        justify-content: flex-end;
+    }
+
+    .toggle-off {
+        background: #adb5bd;
+        justify-content: flex-start;
+    }
+
+    .toggle-circle {
+        width: 17px;
+        height: 17px;
+        background: white;
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+    }
+
+
+    /* =========================
+           EMPTY
+        ========================= */
+
+    .empty-card {
+        background: white;
+        border-radius: 18px;
+        padding: 70px 25px;
+        text-align: center;
+        border: 1px solid #e9ecef;
+        box-shadow: 0 5px 25px rgba(0, 0, 0, .05);
+    }
+
+    .empty-icon {
+        width: 85px;
+        height: 85px;
+        margin: 0 auto 20px;
+        border-radius: 50%;
+        background: #eef4ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 38px;
+    }
+
+    .empty-card h3 {
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .empty-card p {
+        color: #6c757d;
+        max-width: 520px;
+        margin: 0 auto 22px;
+    }
+
+
+    /* =========================
+           TABLET
+        ========================= */
+
+    @@media (max-width: 1100px) {
+
+        .menu-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+
+    /* =========================
+           MOBILE
+        ========================= */
+
+    @@media (max-width: 700px) {
+
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .create-btn {
+            width: 100%;
+        }
+
+        .pg-form {
+            flex-direction: column;
+        }
+
+            .pg-form .btn {
+                width: 100%;
+            }
+
+        .menu-heading {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+        }
+
+            .menu-heading .btn {
+                width: 100%;
+            }
+
+        .menu-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+
+    /* =========================
+           SMALL MOBILE
+        ========================= */
+
+    @@media (max-width: 450px) {
+
+        .header-left {
+            align-items: flex-start;
+        }
+
+        .header-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 22px;
+        }
+
+        .page-header h2 {
+            font-size: 23px;
+        }
+
+        .food-top {
+            height: 110px;
+        }
+
+        .food-content {
+            padding: 17px;
+        }
+    }
+
+</style>

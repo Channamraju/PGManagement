@@ -1,0 +1,1379 @@
+﻿@model IEnumerable<PGManagement.Models.Payment>
+
+@{
+    ViewData["Title"] = "Payment Management";
+
+    var payments = Model?.ToList()
+        ?? new List<PGManagement.Models.Payment>();
+
+    var successfulPayments = payments
+        .Where(p => p.Status == "Success")
+        .ToList();
+
+    var totalAmount = successfulPayments.Sum(p => p.Amount);
+
+    var monthlyAmount = successfulPayments
+        .Where(p => p.PaymentType == "Monthly")
+        .Sum(p => p.Amount);
+
+    var dailyAmount = successfulPayments
+        .Where(p => p.PaymentType == "Daily")
+        .Sum(p => p.Amount);
+
+    var todayAmount = successfulPayments
+        .Where(p => p.PaymentDate.Date == DateTime.Today)
+        .Sum(p => p.Amount);
+
+    var successfulCount = successfulPayments.Count;
+
+    var failedCount = payments.Count(p => p.Status != "Success");
+}
+
+<div class="container-fluid payment-page">
+
+    <!-- HEADER -->
+    <div class="page-header">
+
+        <div>
+            <span class="page-label">
+                <i class="bi bi-wallet2"></i>
+                FINANCIAL MANAGEMENT
+            </span>
+
+            <h2>
+                Payment Management
+            </h2>
+
+            <p>
+                Track tenant payments and PG collections.
+            </p>
+        </div>
+
+        <a asp-controller="Owner"
+           asp-action="Dashboard"
+           class="dashboard-btn">
+
+            <i class="bi bi-grid-1x2"></i>
+            Dashboard
+
+        </a>
+
+    </div>
+
+
+    <!-- SUMMARY CARDS -->
+    <div class="summary-grid">
+
+        <!-- TOTAL COLLECTION -->
+        <div class="summary-card collection-card">
+
+            <div class="summary-icon">
+                <i class="bi bi-currency-rupee"></i>
+            </div>
+
+            <div class="summary-content">
+
+                <span>Total Collection</span>
+
+                <h3>
+                    ₹@totalAmount.ToString("N2")
+                </h3>
+
+                <small>
+                    Successful payments
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- MONTHLY -->
+        <div class="summary-card">
+
+            <div class="summary-icon monthly-icon">
+                <i class="bi bi-calendar-month"></i>
+            </div>
+
+            <div class="summary-content">
+
+                <span>Monthly Collection</span>
+
+                <h3>
+                    ₹@monthlyAmount.ToString("N2")
+                </h3>
+
+                <small>
+                    Monthly rent payments
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- DAILY -->
+        <div class="summary-card">
+
+            <div class="summary-icon daily-icon">
+                <i class="bi bi-calendar-day"></i>
+            </div>
+
+            <div class="summary-content">
+
+                <span>Daily Collection</span>
+
+                <h3>
+                    ₹@dailyAmount.ToString("N2")
+                </h3>
+
+                <small>
+                    Daily stay payments
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <!-- TODAY -->
+        <div class="summary-card">
+
+            <div class="summary-icon today-icon">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+
+            <div class="summary-content">
+
+                <span>Today's Collection</span>
+
+                <h3>
+                    ₹@todayAmount.ToString("N2")
+                </h3>
+
+                <small>
+                    Payments received today
+                </small>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TRANSACTION STATS -->
+    <div class="transaction-stats">
+
+        <div>
+            <i class="bi bi-receipt"></i>
+
+            <span>Total Transactions</span>
+
+            <strong>
+                @payments.Count
+            </strong>
+        </div>
+
+
+        <div>
+            <i class="bi bi-check-circle"></i>
+
+            <span>Successful</span>
+
+            <strong class="success-text">
+                @successfulCount
+            </strong>
+        </div>
+
+
+        <div>
+            <i class="bi bi-x-circle"></i>
+
+            <span>Failed</span>
+
+            <strong class="danger-text">
+                @failedCount
+            </strong>
+        </div>
+
+    </div>
+
+
+    <!-- PAYMENT TABLE -->
+    <div class="payment-section">
+
+        <div class="section-header">
+
+            <div>
+                <h3>
+                    <i class="bi bi-credit-card"></i>
+                    Payment Transactions
+                </h3>
+
+                <p>
+                    Complete payment history for your PGs
+                </p>
+            </div>
+
+            <div class="payment-count">
+                @payments.Count Transactions
+            </div>
+
+        </div>
+
+
+        @if (!payments.Any())
+        {
+            <div class="empty-state">
+
+                <div class="empty-icon">
+                    <i class="bi bi-receipt"></i>
+                </div>
+
+                <h4>
+                    No Payments Found
+                </h4>
+
+                <p>
+                    No tenant payments have been received yet.
+                </p>
+
+                <a asp-controller="OwnerBooking"
+                   asp-action="Index"
+                   class="btn btn-primary">
+
+                    <i class="bi bi-calendar-check"></i>
+                    View Bookings
+
+                </a>
+
+            </div>
+        }
+        else
+        {
+            <!-- SEARCH / FILTER -->
+            <div class="filter-bar">
+
+                <div class="search-box">
+
+                    <i class="bi bi-search"></i>
+
+                    <input type="text"
+                           id="paymentSearch"
+                           placeholder="Search tenant, PG, room or transaction..." />
+
+                </div>
+
+
+                <select id="paymentTypeFilter"
+                        class="filter-select">
+
+                    <option value="all">
+                        All Payment Types
+                    </option>
+
+                    <option value="monthly">
+                        Monthly
+                    </option>
+
+                    <option value="daily">
+                        Daily
+                    </option>
+
+                </select>
+
+
+                <select id="paymentStatusFilter"
+                        class="filter-select">
+
+                    <option value="all">
+                        All Status
+                    </option>
+
+                    <option value="success">
+                        Success
+                    </option>
+
+                    <option value="failed">
+                        Failed
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table class="payment-table"
+                       id="paymentTable">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>#</th>
+
+                            <th>Transaction</th>
+
+                            <th>Tenant</th>
+
+                            <th>PG / Room</th>
+
+                            <th>Bed</th>
+
+                            <th>Payment Type</th>
+
+                            <th>Billing Period</th>
+
+                            <th>Amount</th>
+
+                            <th>Method</th>
+
+                            <th>Payment Date</th>
+
+                            <th>Status</th>
+
+                            <th>Action</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        @{
+                            int count = 1;
+                        }
+
+                        @foreach (var payment in payments)
+                        {
+                            var tenantName =
+                                payment.User?.FullName ?? "Unknown Tenant";
+
+                            var pgName =
+                                payment.Booking?.PG?.PGName ?? "N/A";
+
+                            var roomNumber =
+                                payment.Booking?.Room?.RoomNumber ?? "N/A";
+
+                            var bedNumber =
+                                payment.Booking?.Bed?.BedNumber ?? "N/A";
+
+                            var type =
+                                payment.PaymentType ?? "";
+
+                            var status =
+                                payment.Status ?? "";
+
+                            <tr class="payment-row"
+                                data-search="@($"{tenantName} {pgName} {roomNumber} {bedNumber} {payment.TransactionId}".ToLower())"
+                                data-type="@type.ToLower()"
+                                data-status="@status.ToLower()">
+
+                                <!-- NUMBER -->
+                                <td>
+                                    <span class="row-number">
+                                        @count
+                                    </span>
+                                </td>
+
+
+                                <!-- TRANSACTION -->
+                                <td>
+
+                                    <div class="transaction-cell">
+
+                                        <div class="transaction-icon">
+                                            <i class="bi bi-receipt"></i>
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                @payment.TransactionId
+                                            </strong>
+
+                                            <small>
+                                                Payment #@payment.PaymentId
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- TENANT -->
+                                <td>
+
+                                    <div class="tenant-cell">
+
+                                        <div class="tenant-avatar">
+                                            @{
+                                                var initials =
+                                                    string.Join("",
+                                                        tenantName
+                                                            .Split(
+                                                                ' ',
+                                                                StringSplitOptions.RemoveEmptyEntries)
+                                                            .Take(2)
+                                                            .Select(x => x[0]))
+                                                    .ToUpper();
+                                            }
+
+                                            @initials
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                @tenantName
+                                            </strong>
+
+                                            <small>
+                                                @(payment.User?.Phone ?? "")
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- PG / ROOM -->
+                                <td>
+
+                                    <div class="pg-cell">
+
+                                        <strong>
+                                            @pgName
+                                        </strong>
+
+                                        <small>
+                                            <i class="bi bi-door-open"></i>
+                                            Room @roomNumber
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- BED -->
+                                <td>
+
+                                    <span class="bed-badge">
+
+                                        <i class="bi bi-bed"></i>
+
+                                        @bedNumber
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- PAYMENT TYPE -->
+                                <td>
+
+                                    @if (payment.PaymentType == "Monthly")
+                                    {
+                                        <span class="type-badge monthly">
+
+                                            <i class="bi bi-calendar-month"></i>
+                                            Monthly
+
+                                        </span>
+                                    }
+                                    else if (payment.PaymentType == "Daily")
+                                    {
+                                        <span class="type-badge daily">
+
+                                            <i class="bi bi-calendar-day"></i>
+                                            Daily
+
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="type-badge">
+
+                                            @payment.PaymentType
+
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- BILLING PERIOD -->
+                                <td>
+
+                                    @if (payment.PaymentType == "Monthly"
+                                   && payment.BillingMonth.HasValue)
+                                    {
+                                        <div class="billing-period">
+
+                                            <strong>
+                                                @payment.BillingMonth.Value
+                                                .ToString("MMMM yyyy")
+                                            </strong>
+
+                                            <small>
+                                                Monthly billing
+                                            </small>
+
+                                        </div>
+                                    }
+                                    else if (payment.FromDate.HasValue)
+                                    {
+                                        <div class="billing-period">
+
+                                            <strong>
+                                                @payment.FromDate.Value
+                                                .ToString("dd MMM yyyy")
+                                            </strong>
+
+                                            @if (payment.ToDate.HasValue)
+                                            {
+                                                <small>
+                                                    to
+                                                    @payment.ToDate.Value
+                                                    .ToString("dd MMM yyyy")
+                                                </small>
+                                            }
+
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            -
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- AMOUNT -->
+                                <td>
+
+                                    <strong class="amount">
+
+                                        ₹@payment.Amount.ToString("N2")
+
+                                    </strong>
+
+                                </td>
+
+
+                                <!-- METHOD -->
+                                <td>
+
+                                    <span class="method-badge">
+
+                                        <i class="bi bi-wallet2"></i>
+
+                                        @payment.PaymentMethod
+
+                                    </span>
+
+                                </td>
+
+
+                                <!-- PAYMENT DATE -->
+                                <td>
+
+                                    <div class="date-cell">
+
+                                        <strong>
+                                            @payment.PaymentDate
+                                            .ToString("dd MMM yyyy")
+                                        </strong>
+
+                                        <small>
+                                            @payment.PaymentDate
+                                            .ToString("hh:mm tt")
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- STATUS -->
+                                <td>
+
+                                    @if (payment.Status == "Success")
+                                    {
+                                        <span class="status-badge success">
+
+                                            <i class="bi bi-check-circle-fill"></i>
+                                            Success
+
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge failed">
+
+                                            <i class="bi bi-x-circle-fill"></i>
+                                            @payment.Status
+
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- ACTION -->
+                                <td>
+
+                                    <a asp-controller="OwnerPayment"
+                                       asp-action="Details"
+                                       asp-route-id="@payment.PaymentId"
+                                       class="details-btn"
+                                       title="View payment details">
+
+                                        <i class="bi bi-eye"></i>
+
+                                    </a>
+
+                                </td>
+
+                            </tr>
+
+                            count++;
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <div id="noResults"
+                 class="no-results"
+                 style="display:none;">
+
+                <i class="bi bi-search"></i>
+
+                <h5>
+                    No matching payments
+                </h5>
+
+                <p>
+                    Try changing your search or filters.
+                </p>
+
+            </div>
+        }
+
+    </div>
+
+</div>
+
+
+<!-- ============================= -->
+<!-- JAVASCRIPT -->
+<!-- ============================= -->
+
+<script>
+
+    const searchInput =
+        document.getElementById("paymentSearch");
+
+    const typeFilter =
+        document.getElementById("paymentTypeFilter");
+
+    const statusFilter =
+        document.getElementById("paymentStatusFilter");
+
+    const rows =
+        document.querySelectorAll(".payment-row");
+
+    const noResults =
+        document.getElementById("noResults");
+
+
+    function filterPayments() {
+
+        const search =
+            searchInput?.value.toLowerCase().trim() || "";
+
+        const type =
+            typeFilter?.value.toLowerCase() || "all";
+
+        const status =
+            statusFilter?.value.toLowerCase() || "all";
+
+        let visible = 0;
+
+
+        rows.forEach(row => {
+
+            const rowSearch =
+                row.dataset.search || "";
+
+            const rowType =
+                row.dataset.type || "";
+
+            const rowStatus =
+                row.dataset.status || "";
+
+
+            const searchMatch =
+                rowSearch.includes(search);
+
+            const typeMatch =
+                type === "all" ||
+                rowType === type;
+
+            const statusMatch =
+                status === "all" ||
+                (status === "failed"
+                    ? rowStatus !== "success"
+                    : rowStatus === status);
+
+
+            if (
+                searchMatch &&
+                typeMatch &&
+                statusMatch
+            ) {
+
+                row.style.display = "";
+
+                visible++;
+
+            }
+            else {
+
+                row.style.display = "none";
+
+            }
+
+        });
+
+
+        if (noResults) {
+
+            noResults.style.display =
+                visible === 0 ? "block" : "none";
+
+        }
+
+    }
+
+
+    searchInput?.addEventListener(
+        "input",
+        filterPayments
+    );
+
+    typeFilter?.addEventListener(
+        "change",
+        filterPayments
+    );
+
+    statusFilter?.addEventListener(
+        "change",
+        filterPayments
+    );
+
+</script>
+
+
+<style>
+
+    .payment-page {
+        background: #f6f8fb;
+        min-height: 100vh;
+        padding: 30px;
+    }
+
+    /* HEADER */
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 28px;
+    }
+
+    .page-label {
+        color: #2563eb;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1px;
+    }
+
+    .page-header h2 {
+        margin: 7px 0 4px;
+        color: #0f172a;
+        font-size: 30px;
+        font-weight: 800;
+    }
+
+    .page-header p {
+        color: #64748b;
+        margin: 0;
+    }
+
+    .dashboard-btn {
+        background: white;
+        border: 1px solid #dbe2ea;
+        color: #334155;
+        text-decoration: none;
+        padding: 10px 16px;
+        border-radius: 10px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .dashboard-btn:hover {
+            color: #2563eb;
+            border-color: #2563eb;
+        }
+
+
+    /* SUMMARY */
+
+    .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        margin-bottom: 18px;
+    }
+
+    .summary-card {
+        background: white;
+        border-radius: 17px;
+        padding: 22px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        box-shadow: 0 5px 25px rgba(15, 23, 42, .05);
+    }
+
+    .summary-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        background: #dcfce7;
+        color: #16a34a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 23px;
+    }
+
+    .monthly-icon {
+        background: #ede9fe;
+        color: #7c3aed;
+    }
+
+    .daily-icon {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+
+    .today-icon {
+        background: #fef3c7;
+        color: #d97706;
+    }
+
+    .summary-content span {
+        color: #64748b;
+        font-size: 12px;
+    }
+
+    .summary-content h3 {
+        margin: 3px 0;
+        color: #0f172a;
+        font-size: 21px;
+        font-weight: 800;
+    }
+
+    .summary-content small {
+        color: #94a3b8;
+        font-size: 11px;
+    }
+
+
+    /* TRANSACTION STATS */
+
+    .transaction-stats {
+        background: white;
+        border-radius: 15px;
+        padding: 15px 20px;
+        display: flex;
+        gap: 35px;
+        margin-bottom: 25px;
+        box-shadow: 0 5px 25px rgba(15, 23, 42, .04);
+    }
+
+        .transaction-stats > div {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .transaction-stats i {
+            color: #64748b;
+        }
+
+        .transaction-stats span {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .transaction-stats strong {
+            color: #0f172a;
+            font-size: 16px;
+        }
+
+    .success-text {
+        color: #16a34a !important;
+    }
+
+    .danger-text {
+        color: #dc2626 !important;
+    }
+
+
+    /* PAYMENT SECTION */
+
+    .payment-section {
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 5px 25px rgba(15, 23, 42, .05);
+        overflow: hidden;
+    }
+
+    .section-header {
+        padding: 22px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+        .section-header h3 {
+            margin: 0;
+            font-size: 19px;
+            font-weight: 750;
+            color: #0f172a;
+        }
+
+            .section-header h3 i {
+                color: #2563eb;
+                margin-right: 6px;
+            }
+
+        .section-header p {
+            margin: 5px 0 0;
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+    .payment-count {
+        background: #eff6ff;
+        color: #2563eb;
+        border-radius: 20px;
+        padding: 7px 12px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+
+    /* FILTER */
+
+    .filter-bar {
+        padding: 18px 20px;
+        display: flex;
+        gap: 12px;
+        border-bottom: 1px solid #eef2f7;
+        background: #fafcff;
+    }
+
+    .search-box {
+        flex: 1;
+        position: relative;
+    }
+
+        .search-box i {
+            position: absolute;
+            left: 13px;
+            top: 12px;
+            color: #94a3b8;
+        }
+
+        .search-box input {
+            width: 100%;
+            height: 42px;
+            border: 1px solid #dbe2ea;
+            border-radius: 9px;
+            padding: 0 14px 0 38px;
+            outline: none;
+        }
+
+            .search-box input:focus {
+                border-color: #2563eb;
+            }
+
+    .filter-select {
+        height: 42px;
+        border: 1px solid #dbe2ea;
+        border-radius: 9px;
+        padding: 0 13px;
+        background: white;
+        color: #475569;
+        outline: none;
+    }
+
+
+    /* TABLE */
+
+    .table-wrapper {
+        overflow-x: auto;
+    }
+
+    .payment-table {
+        width: 100%;
+        min-width: 1450px;
+        border-collapse: collapse;
+    }
+
+        .payment-table th {
+            padding: 14px 13px;
+            background: #f8fafc;
+            color: #64748b;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .payment-table td {
+            padding: 15px 13px;
+            border-top: 1px solid #f1f5f9;
+            color: #334155;
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .payment-table tbody tr:hover {
+            background: #fafcff;
+        }
+
+    .row-number {
+        color: #94a3b8;
+        font-weight: 600;
+    }
+
+
+    /* TRANSACTION */
+
+    .transaction-cell {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .transaction-icon {
+        width: 36px;
+        height: 36px;
+        background: #eff6ff;
+        color: #2563eb;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .transaction-cell strong {
+        display: block;
+        font-size: 12px;
+    }
+
+    .transaction-cell small {
+        display: block;
+        color: #94a3b8;
+        margin-top: 3px;
+    }
+
+
+    /* TENANT */
+
+    .tenant-cell {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+    }
+
+    .tenant-avatar {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: #e0e7ff;
+        color: #4338ca;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .tenant-cell strong {
+        display: block;
+        white-space: nowrap;
+    }
+
+    .tenant-cell small {
+        color: #94a3b8;
+    }
+
+
+    /* PG */
+
+    .pg-cell strong {
+        display: block;
+        white-space: nowrap;
+    }
+
+    .pg-cell small {
+        display: block;
+        color: #94a3b8;
+        margin-top: 3px;
+    }
+
+
+    /* BED */
+
+    .bed-badge {
+        background: #f1f5f9;
+        color: #475569;
+        padding: 6px 9px;
+        border-radius: 8px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+
+    /* TYPE */
+
+    .type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 9px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 750;
+        white-space: nowrap;
+        background: #f1f5f9;
+        color: #475569;
+    }
+
+        .type-badge.monthly {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .type-badge.daily {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+
+    /* BILLING */
+
+    .billing-period strong {
+        display: block;
+        font-size: 12px;
+        white-space: nowrap;
+    }
+
+    .billing-period small {
+        color: #94a3b8;
+        font-size: 10px;
+    }
+
+
+    /* AMOUNT */
+
+    .amount {
+        color: #15803d;
+        white-space: nowrap;
+        font-size: 14px;
+    }
+
+
+    /* METHOD */
+
+    .method-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        padding: 6px 9px;
+        border-radius: 8px;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+
+
+    /* DATE */
+
+    .date-cell strong {
+        display: block;
+        white-space: nowrap;
+        font-size: 12px;
+    }
+
+    .date-cell small {
+        display: block;
+        color: #94a3b8;
+        margin-top: 3px;
+    }
+
+
+    /* STATUS */
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 9px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+        .status-badge.success {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-badge.failed {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+
+    /* DETAILS */
+
+    .details-btn {
+        width: 35px;
+        height: 35px;
+        border-radius: 9px;
+        background: #eff6ff;
+        color: #2563eb;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+    }
+
+        .details-btn:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+
+    /* EMPTY */
+
+    .empty-state {
+        padding: 70px 20px;
+        text-align: center;
+    }
+
+    .empty-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: #f1f5f9;
+        color: #94a3b8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: auto;
+        font-size: 30px;
+    }
+
+    .empty-state h4 {
+        margin-top: 18px;
+        color: #0f172a;
+    }
+
+    .empty-state p {
+        color: #64748b;
+    }
+
+
+    /* NO RESULTS */
+
+    .no-results {
+        text-align: center;
+        padding: 50px;
+        color: #64748b;
+    }
+
+        .no-results i {
+            font-size: 35px;
+            color: #94a3b8;
+        }
+
+
+    /* RESPONSIVE */
+
+    @@media (max-width: 1100px) {
+
+        .summary-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @@media (max-width: 700px) {
+
+        .payment-page {
+            padding: 15px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .summary-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .transaction-stats {
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .filter-bar {
+            flex-direction: column;
+        }
+
+        .filter-select {
+            width: 100%;
+        }
+    }
+
+</style>

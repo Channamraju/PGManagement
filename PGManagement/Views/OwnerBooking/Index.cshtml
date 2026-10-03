@@ -1,0 +1,2710 @@
+﻿@model IEnumerable<PGManagement.Models.Booking>
+
+@{
+    ViewData["Title"] = "Owner Bookings";
+
+    var bookingList = Model?.ToList()
+        ?? new List<PGManagement.Models.Booking>();
+
+    var totalBookings = bookingList.Count;
+
+    var pendingBookings = bookingList
+        .Count(x => x.Status == "Pending");
+
+    var confirmedBookings = bookingList
+        .Count(x => x.Status == "Confirmed");
+
+    var cancelledBookings = bookingList
+        .Count(x => x.Status == "Cancelled");
+
+    var completedBookings = bookingList
+        .Count(x => x.Status == "Completed");
+
+    var totalAmount = bookingList
+        .SelectMany(x => x.Payments ?? new List<PGManagement.Models.Payment>())
+        .Where(p => p.Status == "Success")
+        .Sum(p => p.Amount);
+
+    var totalSuccessfulPayments = bookingList
+        .SelectMany(x => x.Payments ?? new List<PGManagement.Models.Payment>())
+        .Count(p => p.Status == "Success");
+
+    var monthlyBookings = bookingList
+        .Count(x => x.StayType == "Monthly");
+
+    var dailyBookings = bookingList
+        .Count(x => x.StayType == "Daily");
+}
+
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+
+<div class="container-fluid py-4 owner-bookings-page">
+
+    <!-- ========================================================= -->
+    <!-- HEADER -->
+    <!-- ========================================================= -->
+
+    <div class="page-header mb-4">
+
+        <div class="page-title">
+
+            <div class="title-icon">
+                <i class="bi bi-calendar2-check"></i>
+            </div>
+
+            <div>
+
+                <h2 class="fw-bold mb-1">
+                    Booking Management
+                </h2>
+
+                <p class="text-muted mb-0">
+                    View, approve, manage and checkout tenants for your PGs.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="header-actions">
+
+            <a asp-controller="Owner"
+               asp-action="Dashboard"
+               class="btn dashboard-btn">
+
+                <i class="bi bi-speedometer2"></i>
+                Dashboard
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- ALERTS -->
+    <!-- ========================================================= -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success custom-alert alert-dismissible fade show">
+
+            <div class="alert-content">
+
+                <i class="bi bi-check-circle-fill"></i>
+
+                <span>
+                    @TempData["Success"]
+                </span>
+
+            </div>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger custom-alert alert-dismissible fade show">
+
+            <div class="alert-content">
+
+                <i class="bi bi-exclamation-triangle-fill"></i>
+
+                <span>
+                    @TempData["Error"]
+                </span>
+
+            </div>
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    <!-- ========================================================= -->
+    <!-- PENDING APPROVAL ALERT -->
+    <!-- ========================================================= -->
+    @if (pendingBookings > 0)
+    {
+        <div class="approval-alert mb-4">
+
+            <div class="approval-alert-left">
+
+                <div class="approval-alert-icon">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+
+                <div>
+
+                    <h5 class="mb-1">
+                        Booking approval required
+                    </h5>
+
+                    <p class="mb-0">
+                        You have
+                        <strong>@pendingBookings pending booking(s)</strong>
+                        waiting for your approval.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <a href="#bookingTable"
+               class="btn approval-alert-btn">
+
+                <i class="bi bi-arrow-down-circle"></i>
+                Review Requests
+
+            </a>
+
+        </div>
+    }
+
+
+    <!-- ========================================================= -->
+    <!-- SUMMARY CARDS -->
+    <!-- ========================================================= -->
+
+    <div class="row g-4 mb-4">
+
+
+        <!-- TOTAL -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card">
+
+                <div class="stat-content">
+
+                    <span class="stat-label">
+                        Total Bookings
+                    </span>
+
+                    <h2>
+                        @totalBookings
+                    </h2>
+
+                    <small>
+                        All booking requests
+                    </small>
+
+                </div>
+
+                <div class="stat-icon total-icon">
+                    <i class="bi bi-calendar-check"></i>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PENDING -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card pending-card">
+
+                <div class="stat-content">
+
+                    <span class="stat-label">
+                        Pending
+                    </span>
+
+                    <h2>
+                        @pendingBookings
+                    </h2>
+
+                    <small>
+                        Waiting for approval
+                    </small>
+
+                </div>
+
+                <div class="stat-icon pending-icon">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- CONFIRMED -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card">
+
+                <div class="stat-content">
+
+                    <span class="stat-label">
+                        Confirmed
+                    </span>
+
+                    <h2>
+                        @confirmedBookings
+                    </h2>
+
+                    <small>
+                        Active bookings
+                    </small>
+
+                </div>
+
+                <div class="stat-icon confirmed-icon">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- COMPLETED -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="stat-card">
+
+                <div class="stat-content">
+
+                    <span class="stat-label">
+                        Completed
+                    </span>
+
+                    <h2>
+                        @completedBookings
+                    </h2>
+
+                    <small>
+                        Completed stays
+                    </small>
+
+                </div>
+
+                <div class="stat-icon completed-icon">
+                    <i class="bi bi-check2-all"></i>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- SECOND SUMMARY ROW -->
+    <!-- ========================================================= -->
+
+    <div class="row g-4 mb-4">
+
+
+        <!-- CANCELLED -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="mini-stat-card">
+
+                <div class="mini-stat-icon cancelled-mini">
+                    <i class="bi bi-x-circle"></i>
+                </div>
+
+                <div>
+
+                    <span>
+                        Cancelled
+                    </span>
+
+                    <strong>
+                        @cancelledBookings
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- MONTHLY -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="mini-stat-card">
+
+                <div class="mini-stat-icon monthly-mini">
+                    <i class="bi bi-calendar-month"></i>
+                </div>
+
+                <div>
+
+                    <span>
+                        Monthly Stays
+                    </span>
+
+                    <strong>
+                        @monthlyBookings
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- DAILY -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="mini-stat-card">
+
+                <div class="mini-stat-icon daily-mini">
+                    <i class="bi bi-calendar-day"></i>
+                </div>
+
+                <div>
+
+                    <span>
+                        Daily Stays
+                    </span>
+
+                    <strong>
+                        @dailyBookings
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PAYMENTS -->
+
+        <div class="col-xl-3 col-md-6">
+
+            <div class="mini-stat-card">
+
+                <div class="mini-stat-icon payment-mini">
+                    <i class="bi bi-credit-card"></i>
+                </div>
+
+                <div>
+
+                    <span>
+                        Transactions
+                    </span>
+
+                    <strong>
+                        @totalSuccessfulPayments
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- PAYMENT SUMMARY -->
+    <!-- ========================================================= -->
+
+    <div class="row g-4 mb-4">
+
+
+        <!-- TOTAL MONEY -->
+
+        <div class="col-lg-6">
+
+            <div class="payment-card">
+
+                <div>
+
+                    <span class="payment-label">
+                        Total Successful Payments
+                    </span>
+
+                    <h3>
+                        ₹@totalAmount.ToString("N2")
+                    </h3>
+
+                    <small>
+                        Total money received from tenants
+                    </small>
+
+                </div>
+
+                <div class="payment-icon green-payment">
+                    <i class="bi bi-cash-stack"></i>
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- TRANSACTIONS -->
+
+        <div class="col-lg-6">
+
+            <div class="payment-card">
+
+                <div>
+
+                    <span class="payment-label">
+                        Successful Transactions
+                    </span>
+
+                    <h3 class="blue-text">
+                        @totalSuccessfulPayments
+                    </h3>
+
+                    <small>
+                        Completed payment records
+                    </small>
+
+                </div>
+
+                <div class="payment-icon blue-payment">
+                    <i class="bi bi-credit-card-2-front"></i>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- EMPTY STATE -->
+    <!-- ========================================================= -->
+    @if (!bookingList.Any())
+    {
+
+        <div class="empty-card">
+
+            <div class="empty-icon">
+
+                <i class="bi bi-calendar-x"></i>
+
+            </div>
+
+            <h3>
+                No Bookings Found
+            </h3>
+
+            <p>
+                No users have booked rooms or beds in your PGs yet.
+            </p>
+
+            <a asp-controller="Owner"
+               asp-action="Dashboard"
+               class="btn btn-primary px-4">
+
+                <i class="bi bi-speedometer2"></i>
+
+                Back to Dashboard
+
+            </a>
+
+        </div>
+
+    }
+    else
+    {
+
+        <!-- ===================================================== -->
+        <!-- BOOKING MANAGEMENT CARD -->
+        <!-- ===================================================== -->
+
+        <div class="booking-card" id="bookingTable">
+
+
+            <!-- ================================================= -->
+            <!-- TABLE HEADER -->
+            <!-- ================================================= -->
+
+            <div class="booking-card-header">
+
+                <div>
+
+                    <h5 class="mb-1">
+
+                        <i class="bi bi-list-check"></i>
+
+                        All Bookings
+
+                    </h5>
+
+                    <small>
+                        @totalBookings booking(s) found
+                    </small>
+
+                </div>
+
+
+                <div class="header-summary">
+
+                    <span class="pending-summary">
+
+                        <i class="bi bi-hourglass-split"></i>
+
+                        @pendingBookings Pending
+
+                    </span>
+
+
+                    <span class="confirmed-summary">
+
+                        <i class="bi bi-check-circle"></i>
+
+                        @confirmedBookings Confirmed
+
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- SEARCH / FILTER -->
+            <!-- ================================================= -->
+
+            <div class="filter-panel">
+
+                <div class="filter-title">
+
+                    <i class="bi bi-funnel"></i>
+
+                    Search & Filter
+
+                </div>
+
+
+                <div class="row g-3">
+
+
+                    <!-- SEARCH -->
+
+                    <div class="col-lg-5 col-md-6">
+
+                        <label class="filter-label">
+                            Search
+                        </label>
+
+                        <div class="search-box">
+
+                            <i class="bi bi-search"></i>
+
+                            <input type="text"
+                                   id="bookingSearch"
+                                   class="form-control"
+                                   placeholder="Search tenant, PG, room, bed or booking ID..."
+                                   autocomplete="off" />
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- STATUS -->
+
+                    <div class="col-lg-2 col-md-6">
+
+                        <label class="filter-label">
+                            Status
+                        </label>
+
+                        <select id="statusFilter"
+                                class="form-select">
+
+                            <option value="All">
+                                All Status
+                            </option>
+
+                            <option value="Pending">
+                                Pending
+                            </option>
+
+                            <option value="Confirmed">
+                                Confirmed
+                            </option>
+
+                            <option value="Completed">
+                                Completed
+                            </option>
+
+                            <option value="Cancelled">
+                                Cancelled
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- STAY -->
+
+                    <div class="col-lg-2 col-md-6">
+
+                        <label class="filter-label">
+                            Stay Type
+                        </label>
+
+                        <select id="stayFilter"
+                                class="form-select">
+
+                            <option value="All">
+                                All Stays
+                            </option>
+
+                            <option value="Monthly">
+                                Monthly
+                            </option>
+
+                            <option value="Daily">
+                                Daily
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- CLEAR -->
+
+                    <div class="col-lg-3 col-md-6 d-flex align-items-end">
+
+                        <button type="button"
+                                id="clearFilters"
+                                class="btn clear-filter-btn w-100">
+
+                            <i class="bi bi-arrow-counterclockwise"></i>
+
+                            Clear Filters
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="filter-result mt-3">
+
+                    <i class="bi bi-info-circle"></i>
+
+                    Showing
+                    <strong id="visibleCount">
+                        @totalBookings
+                    </strong>
+                    of
+                    <strong>
+                        @totalBookings
+                    </strong>
+                    bookings
+
+                </div>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- TABLE -->
+            <!-- ================================================= -->
+
+            <div class="table-responsive">
+
+                <table class="table booking-table mb-0 align-middle">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>#</th>
+
+                            <th>Booking</th>
+
+                            <th>Tenant</th>
+
+                            <th>PG</th>
+
+                            <th>Room / Bed</th>
+
+                            <th>Stay</th>
+
+                            <th>Booking Date</th>
+
+                            <th>Amount</th>
+
+                            <th>Payment</th>
+
+                            <th>Status</th>
+
+                            <th>Action</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody id="bookingTableBody">
+
+                        @{
+                            int count = 1;
+                        }
+
+
+                        @foreach (var booking in bookingList)
+                        {
+
+                            var payments = booking.Payments?
+                                .Where(p => p.Status == "Success")
+                                .OrderByDescending(p => p.PaymentDate)
+                                .ToList()
+                                ?? new List<PGManagement.Models.Payment>();
+
+                            var successfulPaymentCount =
+                                payments.Count;
+
+                            var totalPaid =
+                                payments.Sum(p => p.Amount);
+
+                            var latestPayment =
+                                payments.FirstOrDefault();
+
+
+                            var tenantName =
+                                string.IsNullOrWhiteSpace(
+                                    booking.User?.FullName)
+                                    ? "User"
+                                    : booking.User.FullName.Trim();
+
+
+                            var tenantInitial =
+                                string.IsNullOrWhiteSpace(tenantName)
+                                    ? "U"
+                                    : tenantName.Substring(0, 1).ToUpper();
+
+
+                            var pgName =
+                                booking.PG?.PGName ?? "-";
+
+                            var city =
+                                booking.PG?.City ?? "-";
+
+                            var roomNumber =
+                                booking.Room?.RoomNumber ?? "-";
+
+                            var bedNumber =
+                                booking.Bed?.BedNumber ?? "-";
+
+
+                            <tr class="booking-row"
+                                data-search="@($"{booking.BookingId} {tenantName} {pgName} {city} {roomNumber} {bedNumber}")"
+                                data-status="@booking.Status"
+                                data-stay="@booking.StayType">
+
+
+                                <!-- ================================= -->
+                                <!-- NUMBER -->
+                                <!-- ================================= -->
+
+                                <td>
+
+                                    <span class="row-number">
+                                        @count
+                                    </span>
+
+                                </td>
+
+
+                                <!-- ================================= -->
+                                <!-- BOOKING -->
+                                <!-- ================================= -->
+
+                                <td>
+
+                                    <div class="booking-info">
+
+                                        <strong>
+                                            #@booking.BookingId
+                                        </strong>
+
+                                        <small>
+                                            Booking ID
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ================================= -->
+                                <!-- TENANT -->
+                                <!-- ================================= -->
+
+                                <td>
+
+                                    <div class="tenant-info">
+
+                                        <div class="tenant-avatar">
+
+                                            @tenantInitial
+
+                                        </div>
+
+                                        <div class="tenant-details">
+
+                                            <strong>
+                                                @tenantName
+                                            </strong>
+
+                                            @if (booking.User != null)
+                                            {
+                                                <small>
+
+                                                    <i class="bi bi-telephone"></i>
+
+                                                    @(string.IsNullOrWhiteSpace(booking.User.Phone)
+                                                        ? "Phone not provided"
+                                                        : booking.User.Phone)
+
+                                                </small>
+                                            }
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ================================= -->
+                                <!-- PG -->
+                                <!-- ================================= -->
+
+                                <td>
+
+                                    @if (booking.PG != null)
+                                    {
+
+                                        <div class="pg-info">
+
+                                            <strong>
+                                                @booking.PG.PGName
+                                            </strong>
+
+                                            <small>
+
+                                                <i class="bi bi-geo-alt"></i>
+
+                                                @booking.PG.City
+
+                                            </small>
+
+                                        </div>
+
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            -
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- ================================= -->
+                                <!-- ROOM / BED -->
+                                <!-- ================================= -->
+
+                                <td>
+
+                                    <div class="room-info">
+
+                                        <div>
+
+                                            <i class="bi bi-door-open"></i>
+
+                                            Room
+
+                                            <strong>
+                                                @roomNumber
+                                            </strong>
+
+                                        </div>
+
+                                        <div>
+
+                                            <i class="bi bi-bed"></i>
+
+                                            Bed
+
+                                            <strong>
+                                                @bedNumber
+                                            </strong>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ================================= -->
+                                <!-- STAY -->
+                                <!-- ================================= -->
+
+                                <td>
+
+                                    @if (booking.StayType == "Daily")
+                                    {
+
+                                        <span class="stay-badge daily">
+
+                                            <i class="bi bi-calendar-day"></i>
+
+                                            Daily
+
+                                        </span>
+
+                                        <div class="stay-date">
+
+                                            @booking.StartDate.ToString("dd MMM yyyy")
+
+                                            @if (booking.EndDate.HasValue)
+                                            {
+                                                <span>
+
+                                                    →
+
+                                                    @booking.EndDate.Value.ToString("dd MMM yyyy")
+
+                                                </span>
+                                            }
+
+                                        </div>
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="stay-badge monthly">
+
+                                            <i class="bi bi-calendar-month"></i>
+
+                                            Monthly
+
+                                        </span>
+
+                                        <div class="stay-date">
+
+                                            From
+                                            @booking.StartDate.ToString("dd MMM yyyy")
+
+                                        </div>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- ================================= -->
+                                <!-- BOOKING DATE -->
+                                <!-- ================================= -->
+
+                                <td>
+
+                                    <div class="date-info">
+
+                                        <strong>
+
+                                            @booking.BookingDate.ToString("dd MMM yyyy")
+
+                                        </strong>
+
+                                        <small>
+
+                                            @booking.BookingDate.ToString("hh:mm tt")
+
+                                        </small>
+
+                                    </div>
+
+                                </td>
+
+
+                                <!-- ================================= -->
+                                <!-- AMOUNT -->
+                                <!-- ================================= -->
+
+                                <td>
+
+                                    @if (successfulPaymentCount > 0)
+                                    {
+
+                                        <div class="amount-info">
+
+                                            <strong class="paid-amount">
+
+                                                ₹@totalPaid.ToString("N2")
+
+                                            </strong>
+
+                                            <small>
+
+                                                @successfulPaymentCount
+                                                payment(s)
+
+                                            </small>
+
+                                        </div>
+
+                                    }
+                                    else if (booking.Room != null)
+                                    {
+
+                                        <div class="amount-info">
+
+                                            @if (booking.StayType == "Daily")
+                                            {
+
+                                                <strong>
+
+                                                    ₹@booking.TotalAmount.ToString("N2")
+
+                                                </strong>
+
+                                                <small>
+                                                    Booking total
+                                                </small>
+
+                                            }
+                                            else
+                                            {
+
+                                                <strong>
+
+                                                    ₹@booking.Room.MonthlyRent.ToString("N2")
+
+                                                </strong>
+
+                                                <small>
+                                                    Monthly rent
+                                                </small>
+
+                                            }
+
+                                        </div>
+
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">
+                                            -
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <!-- ================================= -->
+                                <!-- PAYMENT -->
+                                <!-- ================================= -->
+
+                                <td>
+
+                                    @if (successfulPaymentCount > 0)
+                                    {
+
+                                        <span class="payment-status paid">
+
+                                            <i class="bi bi-check-circle-fill"></i>
+
+                                            Paid
+
+                                        </span>
+
+                                        <small class="payment-count">
+
+                                            @successfulPaymentCount
+                                            transaction(s)
+
+                                        </small>
+
+
+                                        @if (latestPayment != null)
+                                        {
+
+                                            <small class="payment-date">
+
+                                                Last:
+                                                @latestPayment.PaymentDate.ToString("dd MMM yyyy")
+
+                                            </small>
+
+                                        }
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="payment-status unpaid">
+
+                                            <i class="bi bi-clock-fill"></i>
+
+                                            Not Paid
+
+                                        </span>
+
+                                        <small class="payment-count">
+
+                                            No successful payment
+
+                                        </small>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- ================================= -->
+                                <!-- STATUS -->
+                                <!-- ================================= -->
+
+                                <td>
+
+                                    @if (booking.Status == "Confirmed")
+                                    {
+
+                                        <span class="status-badge confirmed">
+
+                                            <i class="bi bi-check-circle-fill"></i>
+
+                                            Confirmed
+
+                                        </span>
+
+                                    }
+                                    else if (booking.Status == "Pending")
+                                    {
+
+                                        <span class="status-badge pending">
+
+                                            <i class="bi bi-hourglass-split"></i>
+
+                                            Pending
+
+                                        </span>
+
+                                    }
+                                    else if (booking.Status == "Cancelled")
+                                    {
+
+                                        <span class="status-badge cancelled">
+
+                                            <i class="bi bi-x-circle-fill"></i>
+
+                                            Cancelled
+
+                                        </span>
+
+                                    }
+                                    else if (booking.Status == "Completed")
+                                    {
+
+                                        <span class="status-badge completed">
+
+                                            <i class="bi bi-check2-all"></i>
+
+                                            Completed
+
+                                        </span>
+
+                                    }
+                                    else
+                                    {
+
+                                        <span class="status-badge other">
+
+                                            @booking.Status
+
+                                        </span>
+
+                                    }
+
+                                </td>
+
+
+                                <!-- ================================= -->
+                                <!-- ACTION -->
+                                <!-- ================================= -->
+
+                                <td>
+
+                                    <div class="action-buttons">
+
+
+                                        <!-- VIEW -->
+
+                                        <a asp-controller="OwnerBooking"
+                                           asp-action="Details"
+                                           asp-route-id="@booking.BookingId"
+                                           class="action-btn view-btn"
+                                           title="View Details">
+
+                                            <i class="bi bi-eye"></i>
+
+                                        </a>
+
+
+                                        <!-- APPROVE -->
+                                        @if (booking.Status == "Pending")
+                                        {
+
+                                            <form asp-controller="OwnerBooking"
+                                                  asp-action="Approve"
+                                                  asp-route-id="@booking.BookingId"
+                                                  method="post"
+                                                  class="action-form"
+                                                  onsubmit="return confirm('Are you sure you want to approve this booking?');">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <button type="submit"
+                                                        class="action-btn approve-btn"
+                                                        title="Approve Booking">
+
+                                                    <i class="bi bi-check-lg"></i>
+
+                                                </button>
+
+                                            </form>
+
+
+                                            <!-- REJECT -->
+
+                                            <form asp-controller="OwnerBooking"
+                                                  asp-action="Reject"
+                                                  asp-route-id="@booking.BookingId"
+                                                  method="post"
+                                                  class="action-form"
+                                                  onsubmit="return confirm('Are you sure you want to reject this booking?');">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <button type="submit"
+                                                        class="action-btn reject-btn"
+                                                        title="Reject Booking">
+
+                                                    <i class="bi bi-x-lg"></i>
+
+                                                </button>
+
+                                            </form>
+
+                                        }
+
+
+                                        <!-- CHECKOUT -->
+                                        @if (booking.Status == "Confirmed")
+                                        {
+
+                                            <form asp-controller="OwnerBooking"
+                                                  asp-action="Checkout"
+                                                  asp-route-id="@booking.BookingId"
+                                                  method="post"
+                                                  class="action-form"
+                                                  onsubmit="return confirm('Are you sure you want to checkout this tenant? This will complete the booking and make the bed available again.');">
+
+                                                @Html.AntiForgeryToken()
+
+                                                <button type="submit"
+                                                        class="action-btn checkout-btn"
+                                                        title="Checkout Tenant">
+
+                                                    <i class="bi bi-box-arrow-right"></i>
+
+                                                </button>
+
+                                            </form>
+
+                                        }
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                            count++;
+
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+
+            <!-- ================================================= -->
+            <!-- NO FILTER RESULT -->
+            <!-- ================================================= -->
+
+            <div id="noFilterResults"
+                 class="no-filter-results d-none">
+
+                <div class="no-filter-icon">
+
+                    <i class="bi bi-search"></i>
+
+                </div>
+
+                <h5>
+                    No matching bookings
+                </h5>
+
+                <p>
+                    Try changing your search or filter.
+                </p>
+
+                <button type="button"
+                        id="resetFiltersButton"
+                        class="btn btn-primary">
+
+                    <i class="bi bi-arrow-counterclockwise"></i>
+
+                    Reset Filters
+
+                </button>
+
+            </div>
+
+        </div>
+
+    }
+
+</div>
+
+
+<!-- ============================================================= -->
+<!-- CSS -->
+<!-- ============================================================= -->
+
+<style>
+
+    body {
+        background: #f6f8fb;
+    }
+
+
+    .owner-bookings-page {
+        max-width: 1800px;
+        margin: auto;
+    }
+
+
+    /* ========================================================= */
+    /* HEADER */
+    /* ========================================================= */
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+
+    .page-title {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+
+        .page-title h2 {
+            color: #1f2937;
+            font-size: 28px;
+        }
+
+
+    .title-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #e7f1ff;
+        color: #0d6efd;
+        font-size: 25px;
+    }
+
+
+    .dashboard-btn {
+        border: 1px solid #dbe3ef;
+        background: white;
+        color: #0d6efd;
+        padding: 10px 18px;
+        border-radius: 12px;
+        font-weight: 600;
+        transition: .2s ease;
+    }
+
+
+        .dashboard-btn:hover {
+            background: #0d6efd;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+
+    /* ========================================================= */
+    /* ALERT */
+    /* ========================================================= */
+
+    .custom-alert {
+        border: 0;
+        border-radius: 13px;
+        padding: 14px 18px;
+        box-shadow: 0 4px 15px rgba(0,0,0,.04);
+    }
+
+
+    .alert-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+
+    /* ========================================================= */
+    /* APPROVAL ALERT */
+    /* ========================================================= */
+
+    .approval-alert {
+        background: linear-gradient(135deg, #fff8e1, #fff3cd);
+        border: 1px solid #ffe69c;
+        border-radius: 18px;
+        padding: 18px 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        box-shadow: 0 5px 18px rgba(0,0,0,.04);
+    }
+
+
+    .approval-alert-left {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+
+    .approval-alert-icon {
+        width: 50px;
+        height: 50px;
+        min-width: 50px;
+        border-radius: 14px;
+        background: #fff3cd;
+        color: #997404;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 23px;
+    }
+
+
+    .approval-alert h5 {
+        color: #664d03;
+        font-weight: 700;
+    }
+
+
+    .approval-alert p {
+        color: #856404;
+        font-size: 14px;
+    }
+
+
+    .approval-alert-btn {
+        background: #997404;
+        color: white;
+        border-radius: 11px;
+        padding: 9px 16px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+
+        .approval-alert-btn:hover {
+            background: #806000;
+            color: white;
+        }
+
+
+    /* ========================================================= */
+    /* STAT CARDS */
+    /* ========================================================= */
+
+    .stat-card {
+        background: white;
+        border: 1px solid #edf0f4;
+        border-radius: 18px;
+        padding: 22px;
+        min-height: 145px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 5px 18px rgba(0,0,0,.05);
+        transition: .25s ease;
+    }
+
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0,0,0,.09);
+        }
+
+
+    .pending-card {
+        border-color: #ffe69c;
+    }
+
+
+    .stat-label {
+        display: block;
+        font-size: 14px;
+        color: #6c757d;
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+
+
+    .stat-content h2 {
+        font-size: 34px;
+        margin: 0;
+        color: #1f2937;
+    }
+
+
+    .stat-content small {
+        color: #8a94a6;
+    }
+
+
+    .stat-icon {
+        width: 58px;
+        height: 58px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 27px;
+    }
+
+
+    .total-icon {
+        background: #e7f1ff;
+        color: #0d6efd;
+    }
+
+
+    .pending-icon {
+        background: #fff3cd;
+        color: #997404;
+    }
+
+
+    .confirmed-icon {
+        background: #d1e7dd;
+        color: #198754;
+    }
+
+
+    .completed-icon {
+        background: #cfe2ff;
+        color: #084298;
+    }
+
+
+    .cancelled-icon {
+        background: #f8d7da;
+        color: #dc3545;
+    }
+
+
+    /* ========================================================= */
+    /* MINI STAT CARDS */
+    /* ========================================================= */
+
+    .mini-stat-card {
+        background: white;
+        border: 1px solid #edf0f4;
+        border-radius: 16px;
+        padding: 17px 18px;
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        box-shadow: 0 4px 15px rgba(0,0,0,.04);
+        transition: .2s ease;
+    }
+
+
+        .mini-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,.07);
+        }
+
+
+        .mini-stat-card span {
+            display: block;
+            color: #6c757d;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+
+        .mini-stat-card strong {
+            display: block;
+            color: #1f2937;
+            font-size: 22px;
+            margin-top: 2px;
+        }
+
+
+    .mini-stat-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+
+    .cancelled-mini {
+        background: #f8d7da;
+        color: #dc3545;
+    }
+
+
+    .monthly-mini {
+        background: #e7f1ff;
+        color: #0d6efd;
+    }
+
+
+    .daily-mini {
+        background: #fff3cd;
+        color: #997404;
+    }
+
+
+    .payment-mini {
+        background: #d1e7dd;
+        color: #198754;
+    }
+
+
+    /* ========================================================= */
+    /* PAYMENT CARDS */
+    /* ========================================================= */
+
+    .payment-card {
+        background: white;
+        border: 1px solid #edf0f4;
+        border-radius: 18px;
+        padding: 22px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 5px 18px rgba(0,0,0,.05);
+    }
+
+
+    .payment-label {
+        display: block;
+        color: #6c757d;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+
+    .payment-card h3 {
+        margin: 5px 0;
+        font-size: 28px;
+        color: #198754;
+    }
+
+
+    .payment-card small {
+        color: #8a94a6;
+    }
+
+
+    .blue-text {
+        color: #0d6efd !important;
+    }
+
+
+    .payment-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+    }
+
+
+    .green-payment {
+        background: #e9f8ef;
+        color: #198754;
+    }
+
+
+    .blue-payment {
+        background: #e7f1ff;
+        color: #0d6efd;
+    }
+
+
+    /* ========================================================= */
+    /* BOOKING CARD */
+    /* ========================================================= */
+
+    .booking-card {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        border: 1px solid #edf0f4;
+        box-shadow: 0 5px 18px rgba(0,0,0,.05);
+    }
+
+
+    .booking-card-header {
+        background: #0d6efd;
+        color: white;
+        padding: 18px 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+
+        .booking-card-header h5 {
+            font-size: 17px;
+        }
+
+
+        .booking-card-header small {
+            opacity: .85;
+        }
+
+
+    .header-summary {
+        display: flex;
+        gap: 15px;
+        font-size: 13px;
+    }
+
+
+        .header-summary span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+
+    .pending-summary {
+        color: #ffe69c;
+    }
+
+
+    .confirmed-summary {
+        color: #d1e7dd;
+    }
+
+
+    /* ========================================================= */
+    /* FILTER PANEL */
+    /* ========================================================= */
+
+    .filter-panel {
+        padding: 20px 22px;
+        background: #fbfcfe;
+        border-bottom: 1px solid #edf0f4;
+    }
+
+
+    .filter-title {
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 15px;
+    }
+
+
+        .filter-title i {
+            color: #0d6efd;
+            margin-right: 6px;
+        }
+
+
+    .filter-label {
+        display: block;
+        font-size: 12px;
+        color: #6c757d;
+        font-weight: 700;
+        margin-bottom: 6px;
+    }
+
+
+    .search-box {
+        position: relative;
+    }
+
+
+        .search-box i {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8a94a6;
+            z-index: 2;
+        }
+
+
+        .search-box .form-control {
+            padding-left: 38px;
+        }
+
+
+    .filter-panel .form-control,
+    .filter-panel .form-select {
+        border: 1px solid #dfe5ed;
+        border-radius: 10px;
+        min-height: 42px;
+        box-shadow: none;
+    }
+
+
+        .filter-panel .form-control:focus,
+        .filter-panel .form-select:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 .2rem rgba(13,110,253,.1);
+        }
+
+
+    .clear-filter-btn {
+        min-height: 42px;
+        border-radius: 10px;
+        border: 1px solid #dfe5ed;
+        background: white;
+        color: #495057;
+        font-weight: 600;
+    }
+
+
+        .clear-filter-btn:hover {
+            background: #f1f3f5;
+            color: #212529;
+        }
+
+
+    .filter-result {
+        font-size: 12px;
+        color: #8a94a6;
+    }
+
+
+        .filter-result i {
+            color: #0d6efd;
+        }
+
+
+    /* ========================================================= */
+    /* TABLE */
+    /* ========================================================= */
+
+    .booking-table {
+        min-width: 1550px;
+    }
+
+
+        .booking-table thead th {
+            background: #212529;
+            color: white;
+            padding: 14px 12px;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .3px;
+            white-space: nowrap;
+            border: 0;
+        }
+
+
+        .booking-table tbody td {
+            padding: 15px 12px;
+            font-size: 13px;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+
+        .booking-table tbody tr {
+            transition: .2s ease;
+        }
+
+
+            .booking-table tbody tr:hover {
+                background: #f8fbff;
+            }
+
+
+            .booking-table tbody tr.pending-row {
+                background: #fffdf5;
+            }
+
+
+                .booking-table tbody tr.pending-row:hover {
+                    background: #fff9e6;
+                }
+
+
+    /* ========================================================= */
+    /* NUMBER */
+    /* ========================================================= */
+
+    .row-number {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: #f1f3f5;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 12px;
+    }
+
+
+    /* ========================================================= */
+    /* BOOKING INFO */
+    /* ========================================================= */
+
+    .booking-info strong {
+        color: #0d6efd;
+        display: block;
+        font-size: 14px;
+    }
+
+
+    .booking-info small {
+        color: #8a94a6;
+    }
+
+
+    /* ========================================================= */
+    /* TENANT */
+    /* ========================================================= */
+
+    .tenant-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 160px;
+    }
+
+
+    .tenant-avatar {
+        width: 40px;
+        height: 40px;
+        min-width: 40px;
+        border-radius: 50%;
+        background: #e7f1ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 700;
+    }
+
+
+    .tenant-details strong {
+        display: block;
+        white-space: nowrap;
+    }
+
+
+    .tenant-details small {
+        display: block;
+        color: #6c757d;
+        margin-top: 3px;
+        white-space: nowrap;
+    }
+
+
+    /* ========================================================= */
+    /* PG */
+    /* ========================================================= */
+
+    .pg-info strong {
+        display: block;
+        white-space: nowrap;
+    }
+
+
+    .pg-info small {
+        display: block;
+        color: #6c757d;
+        margin-top: 4px;
+    }
+
+
+    /* ========================================================= */
+    /* ROOM */
+    /* ========================================================= */
+
+    .room-info div {
+        white-space: nowrap;
+        margin-bottom: 5px;
+    }
+
+
+        .room-info div:last-child {
+            margin-bottom: 0;
+        }
+
+
+    .room-info i {
+        color: #0d6efd;
+        margin-right: 4px;
+    }
+
+
+    /* ========================================================= */
+    /* STAY */
+    /* ========================================================= */
+
+    .stay-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+
+        .stay-badge.monthly {
+            background: #e7f1ff;
+            color: #0d6efd;
+        }
+
+
+        .stay-badge.daily {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+
+    .stay-date {
+        font-size: 11px;
+        color: #6c757d;
+        margin-top: 6px;
+        white-space: nowrap;
+    }
+
+
+        .stay-date span {
+            display: block;
+            margin-top: 2px;
+        }
+
+
+    /* ========================================================= */
+    /* DATE */
+    /* ========================================================= */
+
+    .date-info strong {
+        display: block;
+        white-space: nowrap;
+    }
+
+
+    .date-info small {
+        color: #8a94a6;
+    }
+
+
+    /* ========================================================= */
+    /* AMOUNT */
+    /* ========================================================= */
+
+    .amount-info strong {
+        display: block;
+        white-space: nowrap;
+    }
+
+
+    .amount-info small {
+        display: block;
+        color: #8a94a6;
+        margin-top: 3px;
+    }
+
+
+    .paid-amount {
+        color: #198754;
+    }
+
+
+    /* ========================================================= */
+    /* PAYMENT STATUS */
+    /* ========================================================= */
+
+    .payment-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+
+        .payment-status.paid {
+            background: #d1e7dd;
+            color: #146c43;
+        }
+
+
+        .payment-status.unpaid {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+
+    .payment-count,
+    .payment-date {
+        display: block;
+        font-size: 10px;
+        color: #8a94a6;
+        margin-top: 4px;
+    }
+
+
+    /* ========================================================= */
+    /* STATUS */
+    /* ========================================================= */
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 11px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+
+        .status-badge.confirmed {
+            background: #d1e7dd;
+            color: #146c43;
+        }
+
+
+        .status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+
+        .status-badge.cancelled {
+            background: #f8d7da;
+            color: #b02a37;
+        }
+
+
+        .status-badge.completed {
+            background: #cfe2ff;
+            color: #084298;
+        }
+
+
+        .status-badge.other {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+
+    /* ========================================================= */
+    /* ACTIONS */
+    /* ========================================================= */
+
+    .action-buttons {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+
+    .action-form {
+        display: inline;
+        margin: 0;
+    }
+
+
+    .action-btn {
+        width: 35px;
+        height: 35px;
+        border: 0;
+        border-radius: 9px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: .2s ease;
+        text-decoration: none;
+        font-size: 14px;
+        cursor: pointer;
+    }
+
+
+    .view-btn {
+        background: #e7f1ff;
+        color: #0d6efd;
+    }
+
+
+        .view-btn:hover {
+            background: #0d6efd;
+            color: white;
+        }
+
+
+    .approve-btn {
+        background: #d1e7dd;
+        color: #198754;
+    }
+
+
+        .approve-btn:hover {
+            background: #198754;
+            color: white;
+        }
+
+
+    .reject-btn {
+        background: #f8d7da;
+        color: #dc3545;
+    }
+
+
+        .reject-btn:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+
+    .checkout-btn {
+        background: #cfe2ff;
+        color: #084298;
+    }
+
+
+        .checkout-btn:hover {
+            background: #0d6efd;
+            color: white;
+        }
+
+
+    /* ========================================================= */
+    /* EMPTY */
+    /* ========================================================= */
+
+    .empty-card {
+        background: white;
+        border-radius: 18px;
+        padding: 70px 20px;
+        text-align: center;
+        border: 1px solid #edf0f4;
+        box-shadow: 0 5px 18px rgba(0,0,0,.05);
+    }
+
+
+    .empty-icon {
+        width: 95px;
+        height: 95px;
+        margin: auto;
+        border-radius: 50%;
+        background: #f1f3f5;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 43px;
+    }
+
+
+    .empty-card h3 {
+        margin-top: 22px;
+        font-weight: 700;
+    }
+
+
+    .empty-card p {
+        color: #6c757d;
+        margin-bottom: 25px;
+    }
+
+
+    /* ========================================================= */
+    /* NO FILTER RESULTS */
+    /* ========================================================= */
+
+    .no-filter-results {
+        text-align: center;
+        padding: 60px 20px;
+        border-top: 1px solid #edf0f4;
+    }
+
+
+    .no-filter-icon {
+        width: 75px;
+        height: 75px;
+        margin: auto;
+        border-radius: 50%;
+        background: #f1f3f5;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 30px;
+        margin-bottom: 18px;
+    }
+
+
+    .no-filter-results h5 {
+        font-weight: 700;
+    }
+
+
+    .no-filter-results p {
+        color: #6c757d;
+        margin-bottom: 18px;
+    }
+
+
+    /* ========================================================= */
+    /* MOBILE */
+    /* ========================================================= */
+
+    @@media (max-width: 768px) {
+
+        .owner-bookings-page {
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+
+        .page-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+
+        .page-title h2 {
+            font-size: 22px;
+        }
+
+
+        .title-icon {
+            width: 48px;
+            height: 48px;
+        }
+
+
+        .dashboard-btn {
+            width: 100%;
+        }
+
+
+        .header-actions {
+            width: 100%;
+        }
+
+
+        .approval-alert {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+
+        .approval-alert-btn {
+            width: 100%;
+            text-align: center;
+        }
+
+
+        .booking-card-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+
+        .header-summary {
+            flex-wrap: wrap;
+        }
+
+
+        .booking-table {
+            min-width: 1550px;
+        }
+
+
+        .stat-card {
+            min-height: 125px;
+        }
+
+
+        .payment-card {
+            padding: 18px;
+        }
+
+
+        .filter-panel {
+            padding: 18px;
+        }
+    }
+
+</style>
+
+
+<!-- ============================================================= -->
+<!-- JAVASCRIPT -->
+<!-- ============================================================= -->
+
+<script>
+
+    document.addEventListener("DOMContentLoaded", function() {
+
+        const searchInput =
+            document.getElementById("bookingSearch");
+
+        const statusFilter =
+            document.getElementById("statusFilter");
+
+        const stayFilter =
+            document.getElementById("stayFilter");
+
+        const clearFilters =
+            document.getElementById("clearFilters");
+
+        const resetFiltersButton =
+            document.getElementById("resetFiltersButton");
+
+        const rows =
+            document.querySelectorAll(".booking-row");
+
+        const visibleCount =
+            document.getElementById("visibleCount");
+
+        const noFilterResults =
+            document.getElementById("noFilterResults");
+
+
+        function filterBookings() {
+
+            const search =
+                (searchInput?.value || "")
+                    .toLowerCase()
+                    .trim();
+
+            const selectedStatus =
+                statusFilter?.value || "All";
+
+            const selectedStay =
+                stayFilter?.value || "All";
+
+
+            let visible = 0;
+
+
+            rows.forEach(function(row) {
+
+                const rowSearch =
+                    (row.dataset.search || "")
+                        .toLowerCase();
+
+                const rowStatus =
+                    row.dataset.status || "";
+
+                const rowStay =
+                    row.dataset.stay || "";
+
+
+                const matchesSearch =
+                    search === "" ||
+                    rowSearch.includes(search);
+
+                const matchesStatus =
+                    selectedStatus === "All" ||
+                    rowStatus === selectedStatus;
+
+                const matchesStay =
+                    selectedStay === "All" ||
+                    rowStay === selectedStay;
+
+
+                if (
+                    matchesSearch &&
+                    matchesStatus &&
+                    matchesStay
+                ) {
+
+                    row.style.display = "";
+
+                    visible++;
+
+                }
+                else {
+
+                    row.style.display = "none";
+
+                }
+
+            });
+
+
+            if (visibleCount) {
+                visibleCount.textContent = visible;
+            }
+
+
+            if (noFilterResults) {
+
+                if (visible === 0) {
+
+                    noFilterResults.classList.remove("d-none");
+
+                }
+                else {
+
+                    noFilterResults.classList.add("d-none");
+
+                }
+
+            }
+
+        }
+
+
+        function resetAllFilters() {
+
+            if (searchInput) {
+                searchInput.value = "";
+            }
+
+            if (statusFilter) {
+                statusFilter.value = "All";
+            }
+
+            if (stayFilter) {
+                stayFilter.value = "All";
+            }
+
+            filterBookings();
+
+        }
+
+
+        if (searchInput) {
+
+            searchInput.addEventListener(
+                "input",
+                filterBookings
+            );
+
+        }
+
+
+        if (statusFilter) {
+
+            statusFilter.addEventListener(
+                "change",
+                filterBookings
+            );
+
+        }
+
+
+        if (stayFilter) {
+
+            stayFilter.addEventListener(
+                "change",
+                filterBookings
+            );
+
+        }
+
+
+        if (clearFilters) {
+
+            clearFilters.addEventListener(
+                "click",
+                resetAllFilters
+            );
+
+        }
+
+
+        if (resetFiltersButton) {
+
+            resetFiltersButton.addEventListener(
+                "click",
+                resetAllFilters
+            );
+
+        }
+
+    });
+
+</script>

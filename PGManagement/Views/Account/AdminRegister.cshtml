@@ -1,0 +1,175 @@
+﻿@model PGManagement.ViewModels.RegisterViewModel
+
+@{
+    ViewData["Title"] = "Admin Register";
+}
+
+<div class="container mt-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-6">
+
+            <div class="card shadow">
+
+                <!-- Header -->
+                <div class="card-header text-center bg-dark text-white">
+                    <h3 class="mb-1">PG Management</h3>
+                    <h5 class="mb-0">Admin Registration</h5>
+                </div>
+
+                <!-- Body -->
+                <div class="card-body">
+
+                    <form asp-controller="Account"
+                          asp-action="AdminRegister"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <!-- Validation Summary -->
+                        <div asp-validation-summary="All"
+                             class="text-danger mb-3">
+                        </div>
+
+                        <!-- Full Name -->
+                        <div class="mb-3">
+
+                            <label asp-for="FullName"
+                                   class="form-label">
+                                Full Name
+                            </label>
+
+                            <input asp-for="FullName"
+                                   class="form-control"
+                                   placeholder="Enter full name"
+                                   autocomplete="name" />
+
+                            <span asp-validation-for="FullName"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+
+                            <label asp-for="Email"
+                                   class="form-label">
+                                Email
+                            </label>
+
+                            <input asp-for="Email"
+                                   type="email"
+                                   class="form-control"
+                                   placeholder="Enter admin email"
+                                   autocomplete="email" />
+
+                            <span asp-validation-for="Email"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                        <!-- Password -->
+                        <div class="mb-3">
+
+                            <label asp-for="Password"
+                                   class="form-label">
+                                Password
+                            </label>
+
+                            <input asp-for="Password"
+                                   type="password"
+                                   class="form-control"
+                                   placeholder="Enter password"
+                                   autocomplete="new-password" />
+
+                            <span asp-validation-for="Password"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="mb-3">
+
+                            <label asp-for="Phone"
+                                   class="form-label">
+                                Phone
+                            </label>
+
+                            <input asp-for="Phone"
+                                   type="tel"
+                                   class="form-control"
+                                   placeholder="Enter phone number"
+                                   autocomplete="tel" />
+
+                            <span asp-validation-for="Phone"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                        <!-- Address -->
+                        <div class="mb-3">
+
+                            <label asp-for="Address"
+                                   class="form-label">
+                                Address
+                            </label>
+
+                            <textarea asp-for="Address"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Enter address"
+                                      autocomplete="street-address"></textarea>
+
+                            <span asp-validation-for="Address"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                        <!-- Register Button -->
+                        <div class="d-grid">
+
+                            <button type="submit"
+                                    class="btn btn-dark">
+                                Register as Admin
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                    <!-- Login -->
+                    <div class="text-center mt-3">
+
+                        <span>Already have an account?</span>
+
+                        <a asp-controller="Account"
+                           asp-action="Login"
+                           class="text-decoration-none">
+                            Login
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+}

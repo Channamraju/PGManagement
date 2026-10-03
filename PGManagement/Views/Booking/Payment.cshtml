@@ -1,0 +1,235 @@
+﻿@model PGManagement.Models.Booking
+
+@{
+    ViewData["Title"] = "Payment";
+}
+
+<div class="container mt-5">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-7">
+
+            <div class="card shadow border-0">
+
+                <!-- Header -->
+                <div class="card-header bg-primary text-white">
+
+                    <h3 class="mb-0">
+                        <i class="bi bi-credit-card"></i>
+                        Payment
+                    </h3>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <!-- Error Message -->
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            @TempData["Error"]
+                        </div>
+                    }
+
+
+                    <!-- Booking Summary -->
+                    <h4 class="fw-bold mb-4">
+                        Booking Summary
+                    </h4>
+
+
+                    <div class="row mb-3">
+
+                        <div class="col-6">
+                            <strong>PG Name</strong>
+                        </div>
+
+                        <div class="col-6">
+                            @Model.PG?.PGName
+                        </div>
+
+                    </div>
+
+
+                    <div class="row mb-3">
+
+                        <div class="col-6">
+                            <strong>City</strong>
+                        </div>
+
+                        <div class="col-6">
+                            @Model.PG?.City
+                        </div>
+
+                    </div>
+
+
+                    <div class="row mb-3">
+
+                        <div class="col-6">
+                            <strong>Room</strong>
+                        </div>
+
+                        <div class="col-6">
+                            @Model.Room?.RoomNumber
+                        </div>
+
+                    </div>
+
+
+                    <div class="row mb-3">
+
+                        <div class="col-6">
+                            <strong>Bed</strong>
+                        </div>
+
+                        <div class="col-6">
+                            @Model.Bed?.BedNumber
+                        </div>
+
+                    </div>
+
+
+                    <!-- Monthly Rent -->
+                    <div class="row mb-3">
+
+                        <div class="col-6">
+                            <strong>Monthly Rent</strong>
+                        </div>
+
+                        <div class="col-6">
+
+                            <span class="fw-bold text-success fs-5">
+                                ₹@Model.Room?.MonthlyRent.ToString("N2")
+                            </span>
+
+                        </div>
+
+                    </div>
+
+
+                    <hr />
+
+
+                    <!-- Payment Information -->
+                    <div class="alert alert-info">
+
+                        <strong>
+                            <i class="bi bi-info-circle"></i>
+                            Payment Information
+                        </strong>
+
+                        <br />
+
+                        This is a demo payment page.
+                        Select your preferred payment method
+                        and click the payment button.
+
+                    </div>
+
+
+                    <!-- Payment Form -->
+                    <form asp-controller="Booking"
+                          asp-action="ConfirmPayment"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+
+                        <!-- Booking ID -->
+                        <input type="hidden"
+                               name="bookingId"
+                               value="@Model.BookingId" />
+
+
+                        <!-- Payment Method -->
+                        <div class="mb-4">
+
+                            <label class="form-label fw-bold">
+                                Select Payment Method
+                            </label>
+
+                            <select name="paymentMethod"
+                                    class="form-select"
+                                    required>
+
+                                <option value="">
+                                    -- Select Payment Method --
+                                </option>
+
+                                <option value="UPI">
+                                    UPI
+                                </option>
+
+                                <option value="Credit Card">
+                                    Credit Card
+                                </option>
+
+                                <option value="Debit Card">
+                                    Debit Card
+                                </option>
+
+                                <option value="Net Banking">
+                                    Net Banking
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- Amount -->
+                        <div class="alert alert-light border">
+
+                            <div class="d-flex justify-content-between">
+
+                                <strong>
+                                    Amount to Pay
+                                </strong>
+
+                                <strong class="text-success fs-4">
+                                    ₹@Model.Room?.MonthlyRent.ToString("N2")
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Pay Button -->
+                        <button type="submit"
+                                class="btn btn-success btn-lg w-100">
+
+                            <i class="bi bi-lock-fill"></i>
+
+                            Pay ₹@Model.Room?.MonthlyRent.ToString("N2")
+
+                        </button>
+
+                    </form>
+
+
+                    <!-- Back Button -->
+                    <a asp-controller="UserPG"
+                       asp-action="Details"
+                       asp-route-id="@Model.PGId"
+                       class="btn btn-outline-secondary w-100 mt-3">
+
+                        <i class="bi bi-arrow-left"></i>
+
+                        Back to PG
+
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

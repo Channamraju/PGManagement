@@ -1,0 +1,766 @@
+﻿@model PGManagement.Models.Room
+
+@{
+    ViewData["Title"] = "Add Room";
+
+    var pgs = ViewBag.PGs as List<PGManagement.Models.PG>;
+}
+
+<div class="container py-4">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="bi bi-door-open text-primary"></i>
+                Add New Room
+            </h2>
+
+            <p class="text-muted mb-0">
+                Add a room and its beds to your PG
+            </p>
+        </div>
+
+        <a asp-controller="Room"
+           asp-action="Index"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+            Back to Rooms
+
+        </a>
+
+    </div>
+
+
+    <div class="row justify-content-center">
+
+        <div class="col-xl-8 col-lg-9">
+
+            <div class="card room-card border-0 shadow-sm">
+
+                <!-- Card Header -->
+                <div class="room-card-header">
+
+                    <div class="header-icon">
+                        <i class="bi bi-building"></i>
+                    </div>
+
+                    <div>
+                        <h4 class="mb-1">
+                            Room Information
+                        </h4>
+
+                        <small>
+                            Enter the room details below
+                        </small>
+                    </div>
+
+                </div>
+
+
+                <div class="card-body p-4">
+
+                    <form asp-controller="Room"
+                          asp-action="Create"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+
+                        <!-- Validation -->
+                        <div asp-validation-summary="ModelOnly"
+                             class="alert alert-danger"
+                             role="alert">
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- PG -->
+                        <!-- ================================================= -->
+
+                        <div class="form-section">
+
+                            <h5 class="section-title">
+                                <i class="bi bi-buildings"></i>
+                                PG Details
+                            </h5>
+
+                            <div class="mb-4">
+
+                                <label asp-for="PGId"
+                                       class="form-label fw-semibold">
+                                    Select PG
+                                </label>
+
+                                <select asp-for="PGId"
+                                        class="form-select form-select-lg">
+
+                                    <option value="">
+                                        -- Select PG --
+                                    </option>
+
+                                    @if (pgs != null)
+                                    {
+                                        foreach (var pg in pgs)
+                                        {
+                                            <option value="@pg.PGId">
+                                                @pg.PGName - @pg.City
+                                            </option>
+                                        }
+                                    }
+
+                                </select>
+
+                                <span asp-validation-for="PGId"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- ROOM DETAILS -->
+                        <!-- ================================================= -->
+
+                        <div class="form-section">
+
+                            <h5 class="section-title">
+                                <i class="bi bi-door-closed"></i>
+                                Room Details
+                            </h5>
+
+
+                            <div class="row">
+
+                                <!-- Room Number -->
+                                <div class="col-md-6 mb-3">
+
+                                    <label asp-for="RoomNumber"
+                                           class="form-label fw-semibold">
+
+                                        Room Number
+
+                                    </label>
+
+                                    <div class="input-group">
+
+                                        <span class="input-group-text">
+                                            <i class="bi bi-hash"></i>
+                                        </span>
+
+                                        <input asp-for="RoomNumber"
+                                               class="form-control"
+                                               placeholder="Example: 101" />
+
+                                    </div>
+
+                                    <span asp-validation-for="RoomNumber"
+                                          class="text-danger">
+                                    </span>
+
+                                </div>
+
+
+                                <!-- Room Type -->
+                                <div class="col-md-6 mb-3">
+
+                                    <label asp-for="RoomType"
+                                           class="form-label fw-semibold">
+
+                                        Room Type
+
+                                    </label>
+
+                                    <select asp-for="RoomType"
+                                            class="form-select">
+
+                                        <option value="">
+                                            -- Select Room Type --
+                                        </option>
+
+                                        <option value="A/C">
+                                            A/C
+                                        </option>
+
+                                        <option value="Non-A/C">
+                                            Non-A/C
+                                        </option>
+
+                                    </select>
+
+                                    <span asp-validation-for="RoomType"
+                                          class="text-danger">
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- Sharing -->
+                            <div class="mb-3">
+
+                                <label asp-for="SharingType"
+                                       class="form-label fw-semibold">
+
+                                    Sharing Type
+
+                                </label>
+
+                                <select asp-for="SharingType"
+                                        id="sharingType"
+                                        class="form-select form-select-lg">
+
+                                    <option value="">
+                                        -- Select Sharing Type --
+                                    </option>
+
+                                    <option value="Single">
+                                        Single Sharing
+                                    </option>
+
+                                    <option value="Double">
+                                        Double Sharing
+                                    </option>
+
+                                    <option value="Triple">
+                                        Triple Sharing
+                                    </option>
+
+                                    <option value="Four">
+                                        Four Sharing
+                                    </option>
+
+                                </select>
+
+                                <span asp-validation-for="SharingType"
+                                      class="text-danger">
+                                </span>
+
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle"></i>
+                                    Capacity will be automatically selected.
+                                </div>
+
+                            </div>
+
+
+                            <!-- Capacity -->
+                            <div class="capacity-box mt-4">
+
+                                <div class="capacity-icon">
+                                    <i class="bi bi-people-fill"></i>
+                                </div>
+
+                                <div class="capacity-content">
+
+                                    <label asp-for="Capacity"
+                                           class="form-label fw-semibold mb-1">
+
+                                        Bed Capacity
+
+                                    </label>
+
+                                    <input asp-for="Capacity"
+                                           id="capacity"
+                                           type="number"
+                                           min="1"
+                                           class="form-control"
+                                           readonly />
+
+                                    <span asp-validation-for="Capacity"
+                                          class="text-danger">
+                                    </span>
+
+                                    <small class="text-muted">
+                                        Beds will be created automatically
+                                        according to the selected sharing type.
+                                    </small>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- RENT -->
+                        <!-- ================================================= -->
+
+                        <div class="form-section">
+
+                            <h5 class="section-title">
+                                <i class="bi bi-currency-rupee"></i>
+                                Rent Details
+                            </h5>
+
+
+                            <div class="row">
+
+                                <!-- Monthly Rent -->
+                                <div class="col-md-6 mb-3">
+
+                                    <label asp-for="MonthlyRent"
+                                           class="form-label fw-semibold">
+
+                                        Monthly Rent
+
+                                    </label>
+
+                                    <div class="input-group">
+
+                                        <span class="input-group-text">
+                                            ₹
+                                        </span>
+
+                                        <input asp-for="MonthlyRent"
+                                               type="number"
+                                               min="1"
+                                               step="0.01"
+                                               class="form-control"
+                                               placeholder="8000" />
+
+                                    </div>
+
+                                    <span asp-validation-for="MonthlyRent"
+                                          class="text-danger">
+                                    </span>
+
+                                </div>
+
+
+                                <!-- Daily Rent -->
+                                <div class="col-md-6 mb-3">
+
+                                    <label asp-for="DailyRent"
+                                           class="form-label fw-semibold">
+
+                                        Daily Rent
+
+                                    </label>
+
+                                    <div class="input-group">
+
+                                        <span class="input-group-text">
+                                            ₹
+                                        </span>
+
+                                        <input asp-for="DailyRent"
+                                               type="number"
+                                               min="1"
+                                               step="0.01"
+                                               class="form-control"
+                                               placeholder="350" />
+
+                                    </div>
+
+                                    <span asp-validation-for="DailyRent"
+                                          class="text-danger">
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <div class="rent-info">
+
+                                <i class="bi bi-info-circle-fill"></i>
+
+                                <span>
+                                    Monthly rent is used for monthly stays.
+                                    Daily rent is used for daily stays.
+                                </span>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- BED PREVIEW -->
+                        <!-- ================================================= -->
+
+                        <div class="form-section">
+
+                            <h5 class="section-title">
+                                <i class="bi bi-grid-3x3-gap"></i>
+                                Bed Preview
+                            </h5>
+
+                            <div id="bedPreview"
+                                 class="bed-preview">
+
+                                <div class="empty-preview">
+
+                                    <i class="bi bi-bed"></i>
+
+                                    <span>
+                                        Select a sharing type to preview beds
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- ACTION BUTTONS -->
+                        <!-- ================================================= -->
+
+                        <div class="form-actions">
+
+                            <a asp-controller="Room"
+                               asp-action="Index"
+                               class="btn btn-light btn-lg">
+
+                                <i class="bi bi-x-circle"></i>
+                                Cancel
+
+                            </a>
+
+
+                            <button type="submit"
+                                    class="btn btn-primary btn-lg">
+
+                                <i class="bi bi-check-circle"></i>
+                                Save Room
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    .room-card {
+        border-radius: 18px;
+        overflow: hidden;
+        background: #ffffff;
+    }
+
+
+    .room-card-header {
+        padding: 22px 25px;
+        background: linear-gradient(135deg, #0d6efd, #4f8dfd);
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+
+        .room-card-header h4 {
+            font-weight: 700;
+        }
+
+
+        .room-card-header small {
+            opacity: .9;
+        }
+
+
+    .header-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
+        background: rgba(255,255,255,.18);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+
+    .form-section {
+        padding: 20px 0;
+        border-bottom: 1px solid #eeeeee;
+    }
+
+
+        .form-section:last-of-type {
+            border-bottom: none;
+        }
+
+
+    .section-title {
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #212529;
+    }
+
+
+        .section-title i {
+            color: #0d6efd;
+            margin-right: 7px;
+        }
+
+
+    .form-label {
+        color: #343a40;
+    }
+
+
+    .form-control,
+    .form-select {
+        border-radius: 10px;
+        border: 1px solid #dfe3e8;
+    }
+
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 .15rem rgba(13,110,253,.12);
+        }
+
+
+    .input-group-text {
+        border-radius: 10px 0 0 10px;
+        background: #f8f9fa;
+    }
+
+
+    .capacity-box {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 18px;
+        background: #f8faff;
+        border: 1px solid #e3ebff;
+        border-radius: 14px;
+    }
+
+
+    .capacity-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: #e7f1ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 21px;
+    }
+
+
+    .capacity-content {
+        flex: 1;
+    }
+
+
+        .capacity-content .form-control {
+            max-width: 120px;
+            background: white;
+            font-weight: 700;
+        }
+
+
+    .rent-info {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 12px 15px;
+        border-radius: 10px;
+        background: #f1f8ff;
+        color: #0d6efd;
+        font-size: 14px;
+    }
+
+
+    .bed-preview {
+        min-height: 90px;
+        padding: 15px;
+        border-radius: 14px;
+        background: #f8f9fa;
+        border: 1px dashed #ced4da;
+    }
+
+
+    .empty-preview {
+        min-height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: #6c757d;
+    }
+
+
+        .empty-preview i {
+            font-size: 25px;
+        }
+
+
+    .bed-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        margin: 5px;
+        border-radius: 10px;
+        background: #e7f1ff;
+        color: #0d6efd;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+
+        .bed-item i {
+            font-size: 17px;
+        }
+
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 25px;
+    }
+
+
+        .form-actions .btn {
+            border-radius: 10px;
+            padding-left: 22px;
+            padding-right: 22px;
+        }
+
+
+    @@media (max-width: 576px) {
+
+        .container {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .room-card-header {
+            padding: 18px;
+        }
+
+        .card-body {
+            padding: 20px !important;
+        }
+
+        .form-actions {
+            flex-direction: column-reverse;
+        }
+
+            .form-actions .btn {
+                width: 100%;
+            }
+    }
+
+</style>
+
+
+@section Scripts {
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function() {
+
+            const sharingType =
+                document.getElementById("sharingType");
+
+            const capacity =
+                document.getElementById("capacity");
+
+            const bedPreview =
+                document.getElementById("bedPreview");
+
+
+            const capacityMap = {
+                "Single": 1,
+                "Double": 2,
+                "Triple": 3,
+                "Four": 4
+            };
+
+
+            function updateCapacity() {
+
+                const selected =
+                    sharingType.value;
+
+                const count =
+                    capacityMap[selected] || 0;
+
+
+                capacity.value = count;
+
+
+                if (count === 0) {
+
+                    bedPreview.innerHTML = `
+                                <div class="empty-preview">
+                                    <i class="bi bi-bed"></i>
+                                    <span>
+                                        Select a sharing type to preview beds
+                                    </span>
+                                </div>
+                            `;
+
+                    return;
+                }
+
+
+                let html = "";
+
+
+                for (let i = 1; i <= count; i++) {
+
+                    html += `
+                                <span class="bed-item">
+                                    <i class="bi bi-bed-fill"></i>
+                                    Bed ${i}
+                                </span>
+                            `;
+
+                }
+
+
+                bedPreview.innerHTML = html;
+
+            }
+
+
+            sharingType.addEventListener(
+                "change",
+                updateCapacity
+            );
+
+
+            // Load initial value
+            updateCapacity();
+
+        });
+
+    </script>
+
+}

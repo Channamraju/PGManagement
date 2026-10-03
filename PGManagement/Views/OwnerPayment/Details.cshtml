@@ -1,0 +1,1074 @@
+﻿@model PGManagement.Models.Payment
+
+@{
+    ViewData["Title"] = "Payment Details";
+
+    var tenantName = Model.User?.FullName ?? "Unknown Tenant";
+
+    var initials = string.Join("",
+        tenantName
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Take(2)
+            .Select(x => x[0]))
+        .ToUpper();
+
+    var booking = Model.Booking;
+
+    var pgName = booking?.PG?.PGName ?? "N/A";
+    var roomNumber = booking?.Room?.RoomNumber ?? "N/A";
+    var bedNumber = booking?.Bed?.BedNumber ?? "N/A";
+
+    var isSuccess = Model.Status == "Success";
+}
+
+<div class="container-fluid payment-details-page">
+
+    <!-- HEADER -->
+    <div class="page-header">
+
+        <div>
+
+            <a asp-action="Index"
+               class="back-link">
+
+                <i class="bi bi-arrow-left"></i>
+                Back to Payments
+
+            </a>
+
+            <h2>
+                <i class="bi bi-receipt"></i>
+                Payment Details
+            </h2>
+
+            <p>
+                Complete information about this payment transaction.
+            </p>
+
+        </div>
+
+
+        <div class="status-badge @(isSuccess ? "success" : "failed")">
+
+            @if (isSuccess)
+            {
+                <i class="bi bi-check-circle-fill"></i>
+                <span>Payment Successful</span>
+            }
+            else
+            {
+                <i class="bi bi-x-circle-fill"></i>
+                <span>@Model.Status</span>
+            }
+
+        </div>
+
+    </div>
+
+
+    <!-- RECEIPT HEADER -->
+    <div class="receipt-card">
+
+        <div class="receipt-top">
+
+            <div class="receipt-icon">
+
+                <i class="bi bi-credit-card-2-front"></i>
+
+            </div>
+
+            <div>
+
+                <span class="label">
+                    TRANSACTION ID
+                </span>
+
+                <h3>
+                    @Model.TransactionId
+                </h3>
+
+                <small>
+                    Payment #@Model.PaymentId
+                </small>
+
+            </div>
+
+        </div>
+
+
+        <div class="receipt-amount">
+
+            <span>
+                Amount Received
+            </span>
+
+            <strong>
+                ₹@Model.Amount.ToString("N2")
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- MAIN GRID -->
+    <div class="details-grid">
+
+        <!-- TENANT -->
+        <div class="details-card">
+
+            <div class="card-title">
+
+                <div class="title-icon">
+                    <i class="bi bi-person"></i>
+                </div>
+
+                <div>
+                    <h4>Tenant Information</h4>
+                    <span>Person who made the payment</span>
+                </div>
+
+            </div>
+
+
+            <div class="tenant-profile">
+
+                <div class="tenant-avatar">
+                    @initials
+                </div>
+
+                <div>
+
+                    <h3>
+                        @tenantName
+                    </h3>
+
+                    <p>
+                        <i class="bi bi-envelope"></i>
+                        @(Model.User?.Email ?? "N/A")
+                    </p>
+
+                    <p>
+                        <i class="bi bi-telephone"></i>
+                        @(Model.User?.Phone ?? "N/A")
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PAYMENT INFORMATION -->
+        <div class="details-card">
+
+            <div class="card-title">
+
+                <div class="title-icon">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+
+                <div>
+                    <h4>Payment Information</h4>
+                    <span>Transaction details</span>
+                </div>
+
+            </div>
+
+
+            <div class="info-list">
+
+                <div class="info-row">
+
+                    <span>
+                        <i class="bi bi-hash"></i>
+                        Payment ID
+                    </span>
+
+                    <strong>
+                        #@Model.PaymentId
+                    </strong>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <span>
+                        <i class="bi bi-credit-card"></i>
+                        Payment Method
+                    </span>
+
+                    <strong>
+                        @Model.PaymentMethod
+                    </strong>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <span>
+                        <i class="bi bi-calendar-check"></i>
+                        Payment Date
+                    </span>
+
+                    <strong>
+                        @Model.PaymentDate.ToString("dd MMM yyyy")
+                    </strong>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <span>
+                        <i class="bi bi-clock"></i>
+                        Payment Time
+                    </span>
+
+                    <strong>
+                        @Model.PaymentDate.ToString("hh:mm tt")
+                    </strong>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <span>
+                        <i class="bi bi-check-circle"></i>
+                        Status
+                    </span>
+
+                    <strong class="@(isSuccess ? "success-text" : "danger-text")">
+
+                        @Model.Status
+
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- PG INFORMATION -->
+        <div class="details-card">
+
+            <div class="card-title">
+
+                <div class="title-icon">
+                    <i class="bi bi-building"></i>
+                </div>
+
+                <div>
+                    <h4>Accommodation</h4>
+                    <span>Tenant accommodation details</span>
+                </div>
+
+            </div>
+
+
+            <div class="location-box">
+
+                <div class="location-icon">
+
+                    <i class="bi bi-building-fill"></i>
+
+                </div>
+
+                <div>
+
+                    <span>PG</span>
+
+                    <strong>
+                        @pgName
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <div class="room-grid">
+
+                <div>
+
+                    <span>Room</span>
+
+                    <strong>
+                        @roomNumber
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>Bed</span>
+
+                    <strong>
+                        @bedNumber
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>Room Type</span>
+
+                    <strong>
+                        @(booking?.Room?.RoomType ?? "N/A")
+                    </strong>
+
+                </div>
+
+
+                <div>
+
+                    <span>Sharing</span>
+
+                    <strong>
+                        @(booking?.Room?.SharingType ?? "N/A")
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- BILLING INFORMATION -->
+        <div class="details-card">
+
+            <div class="card-title">
+
+                <div class="title-icon">
+                    <i class="bi bi-calendar-range"></i>
+                </div>
+
+                <div>
+                    <h4>Billing Information</h4>
+                    <span>Payment period</span>
+                </div>
+
+            </div>
+
+
+            <div class="billing-type">
+
+                @if (Model.PaymentType == "Monthly")
+                {
+                    <span class="type-badge monthly">
+
+                        <i class="bi bi-calendar-month"></i>
+                        Monthly Payment
+
+                    </span>
+                }
+                else
+                {
+                    <span class="type-badge daily">
+
+                        <i class="bi bi-calendar-day"></i>
+                        Daily Payment
+
+                    </span>
+                }
+
+            </div>
+
+
+            <div class="info-list">
+
+                @if (Model.PaymentType == "Monthly")
+                {
+                    <div class="info-row">
+
+                        <span>
+                            <i class="bi bi-calendar-month"></i>
+                            Billing Month
+                        </span>
+
+                        <strong>
+                            @(Model.BillingMonth?.ToString("MMMM yyyy") ?? "N/A")
+                        </strong>
+
+                    </div>
+                }
+
+
+                @if (Model.FromDate.HasValue)
+                {
+                    <div class="info-row">
+
+                        <span>
+                            <i class="bi bi-calendar-event"></i>
+                            From Date
+                        </span>
+
+                        <strong>
+                            @Model.FromDate.Value.ToString("dd MMM yyyy")
+                        </strong>
+
+                    </div>
+                }
+
+
+                @if (Model.ToDate.HasValue)
+                {
+                    <div class="info-row">
+
+                        <span>
+                            <i class="bi bi-calendar-x"></i>
+                            To Date
+                        </span>
+
+                        <strong>
+                            @Model.ToDate.Value.ToString("dd MMM yyyy")
+                        </strong>
+
+                    </div>
+                }
+
+
+                <div class="info-row">
+
+                    <span>
+                        <i class="bi bi-house-check"></i>
+                        Stay Type
+                    </span>
+
+                    <strong>
+                        @(booking?.StayType ?? Model.PaymentType)
+                    </strong>
+
+                </div>
+
+
+                <div class="info-row">
+
+                    <span>
+                        <i class="bi bi-currency-rupee"></i>
+                        Amount
+                    </span>
+
+                    <strong class="amount-text">
+                        ₹@Model.Amount.ToString("N2")
+                    </strong>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- TRANSACTION SUMMARY -->
+    <div class="summary-card">
+
+        <div class="summary-left">
+
+            <div class="summary-icon">
+
+                <i class="bi bi-check2-circle"></i>
+
+            </div>
+
+            <div>
+
+                <span>
+                    PAYMENT STATUS
+                </span>
+
+                <h3>
+                    @(isSuccess ? "Payment Received Successfully" : "Payment Not Successful")
+                </h3>
+
+                <p>
+                    Transaction ID:
+                    <strong>@Model.TransactionId</strong>
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="summary-amount">
+
+            <span>
+                Amount
+            </span>
+
+            <strong>
+                ₹@Model.Amount.ToString("N2")
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- ACTIONS -->
+    <div class="action-bar">
+
+        <a asp-action="Index"
+           class="action-btn back">
+
+            <i class="bi bi-arrow-left"></i>
+            Back to Payments
+
+        </a>
+
+
+        @if (booking != null)
+        {
+            <a asp-controller="OwnerTenant"
+               asp-action="Details"
+               asp-route-id="@booking.BookingId"
+               class="action-btn tenant">
+
+                <i class="bi bi-person-vcard"></i>
+                View Tenant
+
+            </a>
+        }
+
+    </div>
+
+</div>
+
+
+<style>
+
+    .payment-details-page {
+        min-height: 100vh;
+        background: #f6f8fb;
+        padding: 30px;
+    }
+
+
+    /* HEADER */
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        margin-bottom: 25px;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        color: #64748b;
+        text-decoration: none;
+        font-size: 14px;
+        margin-bottom: 9px;
+    }
+
+        .back-link:hover {
+            color: #2563eb;
+        }
+
+    .page-header h2 {
+        margin: 0;
+        font-size: 29px;
+        font-weight: 800;
+        color: #0f172a;
+    }
+
+        .page-header h2 i {
+            color: #2563eb;
+            margin-right: 7px;
+        }
+
+    .page-header p {
+        margin: 6px 0 0;
+        color: #64748b;
+    }
+
+
+    /* STATUS */
+
+    .status-badge {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 15px;
+        border-radius: 25px;
+        font-size: 13px;
+        font-weight: 700;
+    }
+
+        .status-badge.success {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .status-badge.failed {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+
+    /* RECEIPT */
+
+    .receipt-card {
+        background: white;
+        border-radius: 19px;
+        padding: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 5px 25px rgba(15,23,42,.06);
+        margin-bottom: 22px;
+    }
+
+    .receipt-top {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .receipt-icon {
+        width: 58px;
+        height: 58px;
+        border-radius: 15px;
+        background: #eff6ff;
+        color: #2563eb;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 26px;
+    }
+
+    .label {
+        color: #94a3b8;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1px;
+    }
+
+    .receipt-top h3 {
+        margin: 3px 0;
+        color: #0f172a;
+        font-size: 18px;
+    }
+
+    .receipt-top small {
+        color: #94a3b8;
+    }
+
+    .receipt-amount {
+        text-align: right;
+    }
+
+        .receipt-amount span {
+            display: block;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .receipt-amount strong {
+            display: block;
+            color: #15803d;
+            font-size: 30px;
+            margin-top: 3px;
+        }
+
+
+    /* GRID */
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    .details-card {
+        background: white;
+        border-radius: 18px;
+        padding: 23px;
+        box-shadow: 0 5px 25px rgba(15,23,42,.05);
+    }
+
+
+    /* CARD TITLE */
+
+    .card-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .title-icon {
+        width: 43px;
+        height: 43px;
+        border-radius: 12px;
+        background: #eff6ff;
+        color: #2563eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .card-title h4 {
+        margin: 0;
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .card-title span {
+        color: #94a3b8;
+        font-size: 12px;
+    }
+
+
+    /* TENANT */
+
+    .tenant-profile {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px;
+        background: #f8fafc;
+        border-radius: 13px;
+    }
+
+    .tenant-avatar {
+        width: 58px;
+        height: 58px;
+        border-radius: 50%;
+        background: linear-gradient(135deg,#2563eb,#4f46e5);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 19px;
+    }
+
+    .tenant-profile h3 {
+        margin: 0 0 7px;
+        color: #0f172a;
+        font-size: 18px;
+    }
+
+    .tenant-profile p {
+        margin: 4px 0;
+        color: #64748b;
+        font-size: 13px;
+    }
+
+        .tenant-profile p i {
+            margin-right: 5px;
+        }
+
+
+    /* INFO */
+
+    .info-list {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        border-bottom: 1px solid #f1f5f9;
+        padding-bottom: 11px;
+    }
+
+        .info-row:last-child {
+            border-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .info-row span {
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 13px;
+        }
+
+        .info-row strong {
+            color: #0f172a;
+            text-align: right;
+            font-size: 13px;
+        }
+
+    .success-text {
+        color: #15803d !important;
+    }
+
+    .danger-text {
+        color: #dc2626 !important;
+    }
+
+    .amount-text {
+        color: #15803d !important;
+        font-size: 16px !important;
+    }
+
+
+    /* LOCATION */
+
+    .location-box {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        background: #f8fafc;
+        padding: 14px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+    }
+
+    .location-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 10px;
+        background: #dbeafe;
+        color: #2563eb;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .location-box span {
+        display: block;
+        color: #94a3b8;
+        font-size: 11px;
+    }
+
+    .location-box strong {
+        color: #0f172a;
+    }
+
+
+    /* ROOM */
+
+    .room-grid {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        gap: 12px;
+    }
+
+        .room-grid div {
+            border: 1px solid #e2e8f0;
+            padding: 11px;
+            border-radius: 10px;
+        }
+
+        .room-grid span {
+            display: block;
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        .room-grid strong {
+            display: block;
+            color: #0f172a;
+            margin-top: 3px;
+        }
+
+
+    /* BILLING */
+
+    .billing-type {
+        margin-bottom: 18px;
+    }
+
+    .type-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 11px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+        .type-badge.monthly {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .type-badge.daily {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+
+    /* SUMMARY */
+
+    .summary-card {
+        margin-top: 22px;
+        background: white;
+        border-radius: 18px;
+        padding: 22px 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 5px 25px rgba(15,23,42,.05);
+    }
+
+    .summary-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .summary-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 14px;
+        background: #dcfce7;
+        color: #16a34a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    .summary-left span {
+        color: #94a3b8;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: .7px;
+    }
+
+    .summary-left h3 {
+        margin: 4px 0;
+        color: #0f172a;
+        font-size: 17px;
+    }
+
+    .summary-left p {
+        margin: 0;
+        color: #64748b;
+        font-size: 12px;
+    }
+
+    .summary-amount {
+        text-align: right;
+    }
+
+        .summary-amount span {
+            display: block;
+            color: #94a3b8;
+            font-size: 11px;
+        }
+
+        .summary-amount strong {
+            display: block;
+            color: #15803d;
+            font-size: 24px;
+        }
+
+
+    /* ACTIONS */
+
+    .action-bar {
+        margin-top: 22px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .action-btn {
+        padding: 10px 16px;
+        border-radius: 10px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-weight: 600;
+        font-size: 13px;
+    }
+
+        .action-btn.back {
+            background: white;
+            color: #475569;
+            border: 1px solid #dbe2ea;
+        }
+
+        .action-btn.tenant {
+            background: #2563eb;
+            color: white;
+        }
+
+        .action-btn:hover {
+            opacity: .85;
+        }
+
+
+    /* RESPONSIVE */
+
+    @@media(max-width:900px) {
+
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .summary-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .summary-amount {
+            text-align: left;
+        }
+    }
+
+
+    @@media(max-width:600px) {
+
+        .payment-details-page {
+            padding: 15px;
+        }
+
+        .page-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .receipt-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .receipt-amount {
+            text-align: left;
+        }
+
+        .room-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-bar {
+            flex-direction: column;
+        }
+
+        .action-btn {
+            justify-content: center;
+        }
+    }
+
+</style>

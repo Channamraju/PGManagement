@@ -1,0 +1,1876 @@
+﻿@model PGManagement.Models.Booking
+
+@{
+    ViewData["Title"] = "Booking Details";
+
+    var payments = Model.Payments?
+        .Where(p => p.Status == "Success")
+        .OrderByDescending(p => p.PaymentDate)
+        .ToList()
+        ?? new List<PGManagement.Models.Payment>();
+
+    var totalPaid = payments.Sum(p => p.Amount);
+    var paymentCount = payments.Count;
+
+    var tenantName = string.IsNullOrWhiteSpace(Model.User?.FullName)
+        ? "User"
+        : Model.User.FullName;
+
+    var tenantInitial = tenantName.Substring(0, 1).ToUpper();
+}
+
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+
+<div class="container-fluid py-4 booking-details-page">
+
+    <!-- ===================================================== -->
+    <!-- HEADER -->
+    <!-- ===================================================== -->
+
+    <div class="page-header mb-4">
+
+        <div class="title-section">
+
+            <div class="title-icon">
+                <i class="bi bi-calendar2-check"></i>
+            </div>
+
+            <div>
+                <h2 class="fw-bold mb-1">
+                    Booking #@Model.BookingId
+                </h2>
+
+                <p class="text-muted mb-0">
+                    Complete booking and payment information
+                </p>
+            </div>
+
+        </div>
+
+
+        <a asp-controller="OwnerBooking"
+           asp-action="Index"
+           class="btn btn-outline-primary">
+
+            <i class="bi bi-arrow-left"></i>
+
+            Back to Bookings
+
+        </a>
+
+    </div>
+
+
+    <!-- ===================================================== -->
+    <!-- STATUS BANNER -->
+    <!-- ===================================================== -->
+
+    <div class="status-banner
+        @(Model.Status == "Confirmed" ? "status-confirmed" :
+          Model.Status == "Pending" ? "status-pending" :
+          Model.Status == "Cancelled" ? "status-cancelled" :
+          Model.Status == "Completed" ? "status-completed" :
+          "status-other")">
+
+        <div class="status-left">
+
+            <div class="status-icon">
+
+                @if (Model.Status == "Confirmed")
+                {
+                    <i class="bi bi-check-circle-fill"></i>
+                }
+                else if (Model.Status == "Pending")
+                {
+                    <i class="bi bi-hourglass-split"></i>
+                }
+                else if (Model.Status == "Cancelled")
+                {
+                    <i class="bi bi-x-circle-fill"></i>
+                }
+                else if (Model.Status == "Completed")
+                {
+                    <i class="bi bi-check2-all"></i>
+                }
+                else
+                {
+                    <i class="bi bi-info-circle"></i>
+                }
+
+            </div>
+
+            <div>
+
+                <small>
+                    Booking Status
+                </small>
+
+                <strong>
+                    @Model.Status
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="booking-date">
+
+            <small>
+                Booking Date
+            </small>
+
+            <strong>
+                @Model.BookingDate.ToString("dd MMM yyyy")
+            </strong>
+
+            <span>
+                @Model.BookingDate.ToString("hh:mm tt")
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <div class="row g-4">
+
+
+        <!-- ================================================= -->
+        <!-- LEFT SIDE -->
+        <!-- ================================================= -->
+
+        <div class="col-xl-8">
+
+
+            <!-- ============================================= -->
+            <!-- TENANT -->
+            <!-- ============================================= -->
+
+            <div class="details-card mb-4">
+
+                <div class="card-heading">
+
+                    <div>
+                        <i class="bi bi-person"></i>
+                        Tenant Information
+                    </div>
+
+                </div>
+
+
+                <div class="card-body-custom">
+
+                    <div class="tenant-profile">
+
+                        <div class="tenant-avatar">
+                            @tenantInitial
+                        </div>
+
+                        <div class="tenant-main">
+
+                            <h4>
+                                @tenantName
+                            </h4>
+
+                            @if (Model.User != null)
+                            {
+                                <div class="tenant-contact">
+
+                                    <span>
+                                        <i class="bi bi-envelope"></i>
+                                        @Model.User.Email
+                                    </span>
+
+                                    <span>
+                                        <i class="bi bi-telephone"></i>
+                                        @Model.User.Phone
+                                    </span>
+
+                                </div>
+                            }
+
+                        </div>
+
+                    </div>
+
+
+                    @if (Model.User != null &&
+                         !string.IsNullOrWhiteSpace(Model.User.Address))
+                    {
+                        <div class="address-box">
+
+                            <i class="bi bi-geo-alt"></i>
+
+                            <div>
+                                <small>
+                                    Address
+                                </small>
+
+                                <strong>
+                                    @Model.User.Address
+                                </strong>
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+
+            <!-- ============================================= -->
+            <!-- PG / ROOM / BED -->
+            <!-- ============================================= -->
+
+            <div class="details-card mb-4">
+
+                <div class="card-heading">
+
+                    <div>
+                        <i class="bi bi-building"></i>
+                        Accommodation Details
+                    </div>
+
+                </div>
+
+
+                <div class="card-body-custom">
+
+                    <div class="row g-3">
+
+
+                        <!-- PG -->
+
+                        <div class="col-md-4">
+
+                            <div class="info-box">
+
+                                <div class="info-icon pg-icon">
+                                    <i class="bi bi-building"></i>
+                                </div>
+
+                                <div>
+
+                                    <small>
+                                        PG
+                                    </small>
+
+                                    <strong>
+                                        @(Model.PG?.PGName ?? "-")
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- ROOM -->
+
+                        <div class="col-md-4">
+
+                            <div class="info-box">
+
+                                <div class="info-icon room-icon">
+                                    <i class="bi bi-door-open"></i>
+                                </div>
+
+                                <div>
+
+                                    <small>
+                                        Room
+                                    </small>
+
+                                    <strong>
+                                        @(Model.Room?.RoomNumber ?? "-")
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- BED -->
+
+                        <div class="col-md-4">
+
+                            <div class="info-box">
+
+                                <div class="info-icon bed-icon">
+                                    <i class="bi bi-bed"></i>
+                                </div>
+
+                                <div>
+
+                                    <small>
+                                        Bed
+                                    </small>
+
+                                    <strong>
+                                        @(Model.Bed?.BedNumber ?? "-")
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ============================================= -->
+            <!-- STAY INFORMATION -->
+            <!-- ============================================= -->
+
+            <div class="details-card mb-4">
+
+                <div class="card-heading">
+
+                    <div>
+                        <i class="bi bi-calendar3"></i>
+                        Stay Information
+                    </div>
+
+                    @if (Model.StayType == "Daily")
+                    {
+                        <span class="stay-badge daily">
+                            <i class="bi bi-calendar-day"></i>
+                            Daily
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="stay-badge monthly">
+                            <i class="bi bi-calendar-month"></i>
+                            Monthly
+                        </span>
+                    }
+
+                </div>
+
+
+                <div class="card-body-custom">
+
+                    <div class="row g-3">
+
+
+                        <!-- STAY TYPE -->
+
+                        <div class="col-md-4">
+
+                            <div class="stay-info-box">
+
+                                <small>
+                                    Stay Type
+                                </small>
+
+                                <strong>
+                                    @Model.StayType
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- START -->
+
+                        <div class="col-md-4">
+
+                            <div class="stay-info-box">
+
+                                <small>
+                                    Start Date
+                                </small>
+
+                                <strong>
+                                    @Model.StartDate.ToString("dd MMM yyyy")
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- END -->
+
+                        <div class="col-md-4">
+
+                            <div class="stay-info-box">
+
+                                <small>
+                                    End Date
+                                </small>
+
+                                @if (Model.EndDate.HasValue)
+                                {
+                                    <strong>
+                                        @Model.EndDate.Value
+                                        .ToString("dd MMM yyyy")
+                                    </strong>
+                                }
+                                else
+                                {
+                                    <strong class="text-muted">
+                                        Monthly Stay
+                                    </strong>
+                                }
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    @if (Model.StayType == "Daily" &&
+                         Model.EndDate.HasValue)
+                    {
+                        var days =
+                            (Model.EndDate.Value.Date -
+                             Model.StartDate.Date).Days + 1;
+
+                        <div class="duration-box">
+
+                            <i class="bi bi-clock-history"></i>
+
+                            <span>
+                                Total Stay
+                            </span>
+
+                            <strong>
+                                @days day(s)
+                            </strong>
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="duration-box monthly-duration">
+
+                            <i class="bi bi-arrow-repeat"></i>
+
+                            <span>
+                                Billing
+                            </span>
+
+                            <strong>
+                                Monthly recurring
+                            </strong>
+
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+
+            <!-- ============================================= -->
+            <!-- PAYMENT HISTORY -->
+            <!-- ============================================= -->
+
+            <div class="details-card mb-4">
+
+                <div class="card-heading">
+
+                    <div>
+                        <i class="bi bi-credit-card"></i>
+                        Payment History
+                    </div>
+
+                    <span class="payment-count-badge">
+                        @paymentCount Payment(s)
+                    </span>
+
+                </div>
+
+
+                <div class="card-body-custom p-0">
+
+                    @if (!payments.Any())
+                    {
+
+                        <div class="no-payment">
+
+                            <div class="no-payment-icon">
+                                <i class="bi bi-credit-card-2-front"></i>
+                            </div>
+
+                            <h5>
+                                No Successful Payments
+                            </h5>
+
+                            <p>
+                                No successful payment has been recorded
+                                for this booking yet.
+                            </p>
+
+                        </div>
+
+                    }
+                    else
+                    {
+
+                        <div class="table-responsive">
+
+                            <table class="table payment-table mb-0">
+
+                                <thead>
+
+                                    <tr>
+
+                                        <th>
+                                            #
+                                        </th>
+
+                                        <th>
+                                            Payment Type
+                                        </th>
+
+                                        <th>
+                                            Billing Period
+                                        </th>
+
+                                        <th>
+                                            Amount
+                                        </th>
+
+                                        <th>
+                                            Method
+                                        </th>
+
+                                        <th>
+                                            Transaction
+                                        </th>
+
+                                        <th>
+                                            Date
+                                        </th>
+
+                                        <th>
+                                            Status
+                                        </th>
+
+                                    </tr>
+
+                                </thead>
+
+
+                                <tbody>
+
+                                    @{
+                                        int paymentNumber = 1;
+                                    }
+
+                                    @foreach (var payment in payments)
+                                    {
+
+                                        <tr>
+
+                                            <td>
+
+                                                <span class="payment-number">
+                                                    @paymentNumber
+                                                </span>
+
+                                            </td>
+
+
+                                            <td>
+
+                                                @if (payment.PaymentType == "Daily")
+                                                {
+                                                    <span class="payment-type daily-payment">
+
+                                                        <i class="bi bi-calendar-day"></i>
+
+                                                        Daily
+
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="payment-type monthly-payment">
+
+                                                        <i class="bi bi-calendar-month"></i>
+
+                                                        Monthly
+
+                                                    </span>
+                                                }
+
+                                            </td>
+
+
+                                            <td>
+
+                                                @if (payment.FromDate.HasValue &&
+                                                     payment.ToDate.HasValue)
+                                                {
+                                                    <div class="billing-period">
+
+                                                        <strong>
+                                                            @payment.FromDate.Value
+                                                            .ToString("dd MMM yyyy")
+                                                        </strong>
+
+                                                        <span>
+                                                            to
+                                                        </span>
+
+                                                        <strong>
+                                                            @payment.ToDate.Value
+                                                            .ToString("dd MMM yyyy")
+                                                        </strong>
+
+                                                    </div>
+                                                }
+                                                else if (payment.BillingMonth.HasValue)
+                                                {
+                                                    <span>
+                                                        @payment.BillingMonth.Value
+                                                        .ToString("MMMM yyyy")
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">
+                                                        -
+                                                    </span>
+                                                }
+
+                                            </td>
+
+
+                                            <td>
+
+                                                <strong class="payment-amount">
+                                                    ₹@payment.Amount.ToString("N2")
+                                                </strong>
+
+                                            </td>
+
+
+                                            <td>
+
+                                                <span class="method-badge">
+                                                    @payment.PaymentMethod
+                                                </span>
+
+                                            </td>
+
+
+                                            <td>
+
+                                                <code class="transaction-id">
+                                                    @payment.TransactionId
+                                                </code>
+
+                                            </td>
+
+
+                                            <td>
+
+                                                <div class="payment-date">
+
+                                                    <strong>
+                                                        @payment.PaymentDate
+                                                        .ToString("dd MMM yyyy")
+                                                    </strong>
+
+                                                    <small>
+                                                        @payment.PaymentDate
+                                                        .ToString("hh:mm tt")
+                                                    </small>
+
+                                                </div>
+
+                                            </td>
+
+
+                                            <td>
+
+                                                <span class="success-badge">
+
+                                                    <i class="bi bi-check-circle-fill"></i>
+
+                                                    Success
+
+                                                </span>
+
+                                            </td>
+
+                                        </tr>
+
+                                        paymentNumber++;
+
+                                    }
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ================================================= -->
+        <!-- RIGHT SIDE -->
+        <!-- ================================================= -->
+
+        <div class="col-xl-4">
+
+
+            <!-- ============================================= -->
+            <!-- PAYMENT SUMMARY -->
+            <!-- ============================================= -->
+
+            <div class="summary-card mb-4">
+
+                <div class="summary-header">
+
+                    <h5>
+                        <i class="bi bi-wallet2"></i>
+                        Payment Summary
+                    </h5>
+
+                </div>
+
+
+                <div class="summary-body">
+
+
+                    <div class="summary-row">
+
+                        <span>
+                            Booking Amount
+                        </span>
+
+                        <strong>
+                            ₹@Model.TotalAmount.ToString("N2")
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-row">
+
+                        <span>
+                            Total Paid
+                        </span>
+
+                        <strong class="text-success">
+                            ₹@totalPaid.ToString("N2")
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-row">
+
+                        <span>
+                            Transactions
+                        </span>
+
+                        <strong>
+                            @paymentCount
+                        </strong>
+
+                    </div>
+
+
+                    <div class="summary-divider"></div>
+
+
+                    @if (Model.StayType == "Monthly")
+                    {
+                        <div class="summary-note">
+
+                            <i class="bi bi-arrow-repeat"></i>
+
+                            <div>
+
+                                <strong>
+                                    Monthly Payment
+                                </strong>
+
+                                <small>
+                                    Tenant pays the monthly rent
+                                    for each billing period.
+                                </small>
+
+                            </div>
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="summary-note">
+
+                            <i class="bi bi-calendar-check"></i>
+
+                            <div>
+
+                                <strong>
+                                    Daily Payment
+                                </strong>
+
+                                <small>
+                                    Payment is calculated according
+                                    to the selected stay period.
+                                </small>
+
+                            </div>
+
+                        </div>
+                    }
+
+                </div>
+
+            </div>
+
+
+            <!-- ============================================= -->
+            <!-- ACTIONS -->
+            <!-- ============================================= -->
+
+            <div class="summary-card mb-4">
+
+                <div class="summary-header">
+
+                    <h5>
+                        <i class="bi bi-lightning-charge"></i>
+                        Booking Actions
+                    </h5>
+
+                </div>
+
+
+                <div class="summary-body">
+
+
+                    @if (Model.Status == "Pending")
+                    {
+
+                        <div class="action-message pending-message">
+
+                            <i class="bi bi-hourglass-split"></i>
+
+                            <div>
+                                <strong>
+                                    Approval Required
+                                </strong>
+
+                                <small>
+                                    Review this booking before
+                                    approving it.
+                                </small>
+                            </div>
+
+                        </div>
+
+
+                        <form asp-controller="OwnerBooking"
+                              asp-action="Approve"
+                              asp-route-id="@Model.BookingId"
+                              method="post"
+                              onsubmit="return confirm('Are you sure you want to approve this booking?');">
+
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit"
+                                    class="btn btn-success w-100 mb-2">
+
+                                <i class="bi bi-check-lg"></i>
+
+                                Approve Booking
+
+                            </button>
+
+                        </form>
+
+
+                        <form asp-controller="OwnerBooking"
+                              asp-action="Reject"
+                              asp-route-id="@Model.BookingId"
+                              method="post"
+                              onsubmit="return confirm('Are you sure you want to reject this booking?');">
+
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit"
+                                    class="btn btn-outline-danger w-100">
+
+                                <i class="bi bi-x-lg"></i>
+
+                                Reject Booking
+
+                            </button>
+
+                        </form>
+
+                    }
+                    else if (Model.Status == "Confirmed")
+                    {
+
+                        <div class="action-message confirmed-message">
+
+                            <i class="bi bi-check-circle-fill"></i>
+
+                            <div>
+
+                                <strong>
+                                    Booking Confirmed
+                                </strong>
+
+                                <small>
+                                    The tenant is currently staying
+                                    in this booking.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        <form asp-controller="OwnerBooking"
+                              asp-action="Checkout"
+                              asp-route-id="@Model.BookingId"
+                              method="post"
+                              onsubmit="return confirm('Are you sure you want to checkout this tenant and complete the booking?');">
+
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit"
+                                    class="btn btn-primary w-100">
+
+                                <i class="bi bi-box-arrow-right"></i>
+
+                                Checkout Tenant
+
+                            </button>
+
+                        </form>
+
+                    }
+                    else if (Model.Status == "Completed")
+                    {
+
+                        <div class="action-message completed-message">
+
+                            <i class="bi bi-check2-all"></i>
+
+                            <div>
+
+                                <strong>
+                                    Booking Completed
+                                </strong>
+
+                                <small>
+                                    This tenant has completed
+                                    the booking.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    }
+                    else if (Model.Status == "Cancelled")
+                    {
+
+                        <div class="action-message cancelled-message">
+
+                            <i class="bi bi-x-circle-fill"></i>
+
+                            <div>
+
+                                <strong>
+                                    Booking Cancelled
+                                </strong>
+
+                                <small>
+                                    No further action is available.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+                    }
+
+                </div>
+
+            </div>
+
+
+            <!-- ============================================= -->
+            <!-- QUICK INFO -->
+            <!-- ============================================= -->
+
+            <div class="summary-card">
+
+                <div class="summary-header">
+
+                    <h5>
+                        <i class="bi bi-info-circle"></i>
+                        Quick Information
+                    </h5>
+
+                </div>
+
+
+                <div class="summary-body">
+
+                    <div class="quick-row">
+
+                        <span>
+                            Booking ID
+                        </span>
+
+                        <strong>
+                            #@Model.BookingId
+                        </strong>
+
+                    </div>
+
+
+                    <div class="quick-row">
+
+                        <span>
+                            Tenant
+                        </span>
+
+                        <strong>
+                            @tenantName
+                        </strong>
+
+                    </div>
+
+
+                    <div class="quick-row">
+
+                        <span>
+                            PG
+                        </span>
+
+                        <strong>
+                            @(Model.PG?.PGName ?? "-")
+                        </strong>
+
+                    </div>
+
+
+                    <div class="quick-row">
+
+                        <span>
+                            Room
+                        </span>
+
+                        <strong>
+                            @(Model.Room?.RoomNumber ?? "-")
+                        </strong>
+
+                    </div>
+
+
+                    <div class="quick-row">
+
+                        <span>
+                            Bed
+                        </span>
+
+                        <strong>
+                            @(Model.Bed?.BedNumber ?? "-")
+                        </strong>
+
+                    </div>
+
+
+                    <div class="quick-row">
+
+                        <span>
+                            Stay
+                        </span>
+
+                        <strong>
+                            @Model.StayType
+                        </strong>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<style>
+
+    body {
+        background: #f6f8fb;
+    }
+
+
+    .booking-details-page {
+        max-width: 1700px;
+        margin: auto;
+    }
+
+
+    /* ===================================================== */
+    /* HEADER */
+    /* ===================================================== */
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+
+    .title-section {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+
+    .title-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 16px;
+        background: #e7f1ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+    }
+
+
+    .title-section h2 {
+        color: #1f2937;
+    }
+
+
+    /* ===================================================== */
+    /* STATUS BANNER */
+    /* ===================================================== */
+
+    .status-banner {
+        border-radius: 18px;
+        padding: 18px 22px;
+        margin-bottom: 25px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border: 1px solid transparent;
+    }
+
+
+    .status-left {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+    }
+
+
+    .status-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+
+
+    .status-left small,
+    .booking-date small {
+        display: block;
+        font-size: 11px;
+        margin-bottom: 2px;
+        opacity: .7;
+    }
+
+
+    .status-left strong {
+        display: block;
+        font-size: 17px;
+    }
+
+
+    .booking-date {
+        text-align: right;
+    }
+
+
+        .booking-date strong {
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+
+        .booking-date span {
+            font-size: 12px;
+            opacity: .7;
+        }
+
+
+    .status-confirmed {
+        background: #eaf8ef;
+        color: #146c43;
+        border-color: #cdebd8;
+    }
+
+
+        .status-confirmed .status-icon {
+            background: #d1e7dd;
+            color: #198754;
+        }
+
+
+    .status-pending {
+        background: #fff9e6;
+        color: #856404;
+        border-color: #f5e5a8;
+    }
+
+
+        .status-pending .status-icon {
+            background: #fff3cd;
+            color: #997404;
+        }
+
+
+    .status-cancelled {
+        background: #fff0f1;
+        color: #b02a37;
+        border-color: #f3c8cc;
+    }
+
+
+        .status-cancelled .status-icon {
+            background: #f8d7da;
+            color: #dc3545;
+        }
+
+
+    .status-completed {
+        background: #edf4ff;
+        color: #084298;
+        border-color: #cfe2ff;
+    }
+
+
+        .status-completed .status-icon {
+            background: #cfe2ff;
+            color: #0d6efd;
+        }
+
+
+    .status-other {
+        background: #f1f3f5;
+        color: #495057;
+    }
+
+
+    /* ===================================================== */
+    /* CARDS */
+    /* ===================================================== */
+
+    .details-card,
+    .summary-card {
+        background: #ffffff;
+        border-radius: 18px;
+        border: 1px solid #edf0f4;
+        box-shadow: 0 5px 18px rgba(0,0,0,.05);
+        overflow: hidden;
+    }
+
+
+    .card-heading,
+    .summary-header {
+        min-height: 62px;
+        padding: 17px 20px;
+        border-bottom: 1px solid #edf0f4;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+
+        .card-heading > div,
+        .summary-header h5 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+
+
+        .card-heading i,
+        .summary-header i {
+            color: #0d6efd;
+            margin-right: 7px;
+        }
+
+
+    .card-body-custom {
+        padding: 22px;
+    }
+
+
+    /* ===================================================== */
+    /* TENANT */
+    /* ===================================================== */
+
+    .tenant-profile {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+
+    .tenant-avatar {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        background: #e7f1ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+        font-weight: 700;
+    }
+
+
+    .tenant-main h4 {
+        margin: 0 0 7px;
+        font-size: 20px;
+    }
+
+
+    .tenant-contact {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        color: #6c757d;
+        font-size: 13px;
+    }
+
+
+        .tenant-contact i {
+            color: #0d6efd;
+            margin-right: 4px;
+        }
+
+
+    .address-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        margin-top: 20px;
+        padding: 14px;
+        background: #f8f9fa;
+        border-radius: 12px;
+    }
+
+
+        .address-box > i {
+            color: #0d6efd;
+            font-size: 18px;
+        }
+
+
+        .address-box small {
+            display: block;
+            color: #8a94a6;
+        }
+
+
+        .address-box strong {
+            display: block;
+            margin-top: 3px;
+            font-size: 13px;
+        }
+
+
+    /* ===================================================== */
+    /* INFO BOX */
+    /* ===================================================== */
+
+    .info-box {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: #f8f9fb;
+        padding: 15px;
+        border-radius: 13px;
+    }
+
+
+    .info-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+    }
+
+
+    .pg-icon {
+        background: #e7f1ff;
+        color: #0d6efd;
+    }
+
+
+    .room-icon {
+        background: #fff3cd;
+        color: #997404;
+    }
+
+
+    .bed-icon {
+        background: #d1e7dd;
+        color: #198754;
+    }
+
+
+    .info-box small {
+        display: block;
+        color: #8a94a6;
+        font-size: 11px;
+    }
+
+
+    .info-box strong {
+        display: block;
+        margin-top: 3px;
+    }
+
+
+    /* ===================================================== */
+    /* STAY */
+    /* ===================================================== */
+
+    .stay-badge {
+        padding: 6px 11px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+
+        .stay-badge.monthly {
+            background: #e7f1ff;
+            color: #0d6efd;
+        }
+
+
+        .stay-badge.daily {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+
+    .stay-info-box {
+        background: #f8f9fb;
+        padding: 16px;
+        border-radius: 12px;
+    }
+
+
+        .stay-info-box small {
+            display: block;
+            color: #8a94a6;
+            font-size: 11px;
+        }
+
+
+        .stay-info-box strong {
+            display: block;
+            margin-top: 5px;
+        }
+
+
+    .duration-box {
+        margin-top: 18px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: #eaf8ef;
+        color: #146c43;
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        font-size: 13px;
+    }
+
+
+        .duration-box strong {
+            margin-left: auto;
+        }
+
+
+    .monthly-duration {
+        background: #e7f1ff;
+        color: #084298;
+    }
+
+
+    /* ===================================================== */
+    /* PAYMENT TABLE */
+    /* ===================================================== */
+
+    .payment-count-badge {
+        background: #e7f1ff;
+        color: #0d6efd;
+        padding: 6px 10px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+
+    .payment-table {
+        min-width: 950px;
+    }
+
+
+        .payment-table thead th {
+            background: #212529;
+            color: white;
+            padding: 13px 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+
+        .payment-table tbody td {
+            padding: 13px 12px;
+            font-size: 12px;
+            border-bottom: 1px solid #edf0f4;
+        }
+
+
+    .payment-number {
+        width: 27px;
+        height: 27px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: #f1f3f5;
+        font-weight: 600;
+    }
+
+
+    .payment-type {
+        padding: 5px 9px;
+        border-radius: 15px;
+        font-size: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+
+    .daily-payment {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+
+    .monthly-payment {
+        background: #e7f1ff;
+        color: #0d6efd;
+    }
+
+
+    .billing-period strong,
+    .billing-period span {
+        display: block;
+        white-space: nowrap;
+    }
+
+
+    .billing-period span {
+        color: #8a94a6;
+        font-size: 10px;
+    }
+
+
+    .payment-amount {
+        color: #198754;
+        white-space: nowrap;
+    }
+
+
+    .method-badge {
+        background: #f1f3f5;
+        padding: 5px 8px;
+        border-radius: 8px;
+        white-space: nowrap;
+    }
+
+
+    .transaction-id {
+        font-size: 10px;
+        color: #495057;
+    }
+
+
+    .payment-date strong {
+        display: block;
+        white-space: nowrap;
+    }
+
+
+    .payment-date small {
+        color: #8a94a6;
+    }
+
+
+    .success-badge {
+        background: #d1e7dd;
+        color: #146c43;
+        padding: 6px 9px;
+        border-radius: 15px;
+        font-size: 10px;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+
+    /* ===================================================== */
+    /* NO PAYMENT */
+    /* ===================================================== */
+
+    .no-payment {
+        text-align: center;
+        padding: 45px 20px;
+    }
+
+
+    .no-payment-icon {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        background: #f1f3f5;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: auto;
+        font-size: 27px;
+    }
+
+
+    .no-payment h5 {
+        margin-top: 15px;
+        font-weight: 700;
+    }
+
+
+    .no-payment p {
+        color: #8a94a6;
+        margin-bottom: 0;
+        font-size: 13px;
+    }
+
+
+    /* ===================================================== */
+    /* SUMMARY */
+    /* ===================================================== */
+
+    .summary-body {
+        padding: 20px;
+    }
+
+
+    .summary-row,
+    .quick-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 15px;
+        padding: 10px 0;
+        font-size: 13px;
+    }
+
+
+        .summary-row span,
+        .quick-row span {
+            color: #6c757d;
+        }
+
+
+        .summary-row strong {
+            color: #1f2937;
+        }
+
+
+    .summary-divider {
+        height: 1px;
+        background: #edf0f4;
+        margin: 8px 0;
+    }
+
+
+    .summary-note {
+        display: flex;
+        gap: 10px;
+        padding: 13px;
+        background: #f8f9fb;
+        border-radius: 12px;
+        margin-top: 12px;
+    }
+
+
+        .summary-note > i {
+            color: #0d6efd;
+            font-size: 18px;
+        }
+
+
+        .summary-note strong,
+        .summary-note small {
+            display: block;
+        }
+
+
+        .summary-note small {
+            color: #8a94a6;
+            margin-top: 3px;
+            line-height: 1.4;
+        }
+
+
+    /* ===================================================== */
+    /* ACTION MESSAGE */
+    /* ===================================================== */
+
+    .action-message {
+        display: flex;
+        gap: 10px;
+        padding: 13px;
+        border-radius: 12px;
+        margin-bottom: 15px;
+    }
+
+
+        .action-message > i {
+            font-size: 19px;
+        }
+
+
+        .action-message strong,
+        .action-message small {
+            display: block;
+        }
+
+
+        .action-message small {
+            margin-top: 3px;
+            font-size: 11px;
+        }
+
+
+    .pending-message {
+        background: #fff9e6;
+        color: #856404;
+    }
+
+
+    .confirmed-message {
+        background: #eaf8ef;
+        color: #146c43;
+    }
+
+
+    .completed-message {
+        background: #edf4ff;
+        color: #084298;
+    }
+
+
+    .cancelled-message {
+        background: #fff0f1;
+        color: #b02a37;
+    }
+
+
+    /* ===================================================== */
+    /* MOBILE */
+    /* ===================================================== */
+
+    @@media (max-width: 768px) {
+
+        .page-header {
+            align-items: flex-start;
+            flex-direction: column;
+        }
+
+
+            .page-header .btn {
+                width: 100%;
+            }
+
+
+        .status-banner {
+            align-items: flex-start;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+
+        .booking-date {
+            text-align: left;
+        }
+
+
+        .tenant-contact {
+            flex-direction: column;
+            gap: 5px;
+        }
+
+
+        .card-body-custom {
+            padding: 16px;
+        }
+    }
+
+</style>

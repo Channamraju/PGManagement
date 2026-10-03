@@ -1,0 +1,1114 @@
+﻿@model IEnumerable<PGManagement.Models.Room>
+
+@{
+    ViewData["Title"] = "Manage Rooms";
+
+    var rooms = Model?.ToList()
+        ?? new List<PGManagement.Models.Room>();
+
+    var totalRooms = rooms.Count;
+
+    var totalBeds = rooms.Sum(x => x.Beds?.Count ?? x.Capacity);
+
+    var availableBeds = rooms.Sum(x =>
+        x.Beds != null
+            ? x.Beds.Count(b => b.Status == "Available")
+            : x.AvailableBeds);
+
+    var occupiedBeds = totalBeds - availableBeds;
+}
+
+<div class="container py-4">
+
+    <!-- ========================================================= -->
+    <!-- HEADER -->
+    <!-- ========================================================= -->
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <div class="page-icon-title">
+
+                <div class="page-icon">
+                    <i class="bi bi-door-open-fill"></i>
+                </div>
+
+                <div>
+
+                    <h2 class="fw-bold mb-1">
+                        Manage Rooms
+                    </h2>
+
+                    <p class="text-muted mb-0">
+                        Manage rooms, beds and rental details
+                        in your PGs.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="d-flex gap-2">
+
+            <a asp-controller="Room"
+               asp-action="Create"
+               class="btn btn-primary">
+
+                <i class="bi bi-plus-lg"></i>
+                Add Room
+
+            </a>
+
+
+            <a asp-controller="Owner"
+               asp-action="Dashboard"
+               class="btn btn-outline-secondary">
+
+                <i class="bi bi-arrow-left"></i>
+                Dashboard
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- ALERTS -->
+    <!-- ========================================================= -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm">
+
+            <i class="bi bi-check-circle-fill me-2"></i>
+
+            @TempData["Success"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm">
+
+            <i class="bi bi-exclamation-circle-fill me-2"></i>
+
+            @TempData["Error"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+
+        </div>
+    }
+
+
+    <!-- ========================================================= -->
+    <!-- SUMMARY -->
+    <!-- ========================================================= -->
+    @if (rooms.Any())
+    {
+        <div class="row g-3 mb-4">
+
+
+            <!-- Total Rooms -->
+
+            <div class="col-md-4">
+
+                <div class="summary-card">
+
+                    <div class="summary-icon rooms">
+
+                        <i class="bi bi-door-open-fill"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>Total Rooms</span>
+
+                        <h3>
+                            @totalRooms
+                        </h3>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Available Beds -->
+
+            <div class="col-md-4">
+
+                <div class="summary-card">
+
+                    <div class="summary-icon available">
+
+                        <i class="bi bi-check-circle-fill"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>Available Beds</span>
+
+                        <h3>
+                            @availableBeds
+                        </h3>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Occupied Beds -->
+
+            <div class="col-md-4">
+
+                <div class="summary-card">
+
+                    <div class="summary-icon occupied">
+
+                        <i class="bi bi-person-fill"></i>
+
+                    </div>
+
+                    <div>
+
+                        <span>Occupied Beds</span>
+
+                        <h3>
+                            @occupiedBeds
+                        </h3>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    }
+
+
+    <!-- ========================================================= -->
+    <!-- ROOM CARDS -->
+    <!-- ========================================================= -->
+    @if (rooms.Any())
+    {
+        <div class="row g-4">
+
+            @foreach (var room in rooms)
+            {
+                var beds = room.Beds?
+                    .ToList()
+                    ?? new List<PGManagement.Models.Bed>();
+
+                var roomTotalBeds = beds.Any()
+                    ? beds.Count
+                    : room.Capacity;
+
+                var roomAvailableBeds = beds.Any()
+                    ? beds.Count(x => x.Status == "Available")
+                    : room.AvailableBeds;
+
+                var roomOccupiedBeds =
+                    roomTotalBeds - roomAvailableBeds;
+
+                var occupancy =
+                    roomTotalBeds > 0
+                        ? roomOccupiedBeds * 100 / roomTotalBeds
+                        : 0;
+
+
+                <div class="col-md-6 col-xl-4">
+
+                    <div class="room-card h-100">
+
+
+                        <!-- ================================================= -->
+                        <!-- CARD HEADER -->
+                        <!-- ================================================= -->
+
+                        <div class="room-card-header">
+
+                            <div>
+
+                                <div class="room-number">
+
+                                    <i class="bi bi-door-open-fill"></i>
+
+                                    Room @room.RoomNumber
+
+                                </div>
+
+                                <div class="pg-name">
+
+                                    <i class="bi bi-buildings"></i>
+
+                                    @(room.PG?.PGName ?? "Unknown PG")
+
+                                </div>
+
+                            </div>
+
+
+                            @if (roomAvailableBeds > 0)
+                            {
+                                <span class="status-badge available">
+
+                                    <i class="bi bi-check-circle-fill"></i>
+
+                                    Available
+
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="status-badge full">
+
+                                    <i class="bi bi-x-circle-fill"></i>
+
+                                    Full
+
+                                </span>
+                            }
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- CARD BODY -->
+                        <!-- ================================================= -->
+
+                        <div class="room-card-body">
+
+
+                            <!-- Room Tags -->
+
+                            <div class="room-tags">
+
+                                @if (room.RoomType == "A/C")
+                                {
+                                    <span class="room-tag ac">
+
+                                        <i class="bi bi-snow"></i>
+
+                                        A/C
+
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="room-tag non-ac">
+
+                                        <i class="bi bi-wind"></i>
+
+                                        Non-A/C
+
+                                    </span>
+                                }
+
+
+                                <span class="room-tag sharing">
+
+                                    <i class="bi bi-people-fill"></i>
+
+                                    @room.SharingType
+
+                                </span>
+
+                            </div>
+
+
+                            <!-- ================================================= -->
+                            <!-- BED INFORMATION -->
+                            <!-- ================================================= -->
+
+                            <div class="bed-section">
+
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+
+                                    <span class="section-label">
+
+                                        <i class="bi bi-grid-3x3-gap"></i>
+
+                                        Beds
+
+                                    </span>
+
+
+                                    <strong>
+
+                                        @roomAvailableBeds /
+                                        @roomTotalBeds
+
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="progress"
+                                     style="height: 8px;">
+
+                                    <div class="progress-bar"
+                                         role="progressbar"
+                                         style="width: @((roomTotalBeds > 0 ? roomAvailableBeds * 100 / roomTotalBeds : 0))%;">
+                                    </div>
+
+                                </div>
+
+
+                                <div class="bed-counts mt-2">
+
+                                    <span class="available-count">
+
+                                        <i class="bi bi-check-circle-fill"></i>
+
+                                        @roomAvailableBeds Available
+
+                                    </span>
+
+
+                                    <span class="occupied-count">
+
+                                        <i class="bi bi-person-fill"></i>
+
+                                        @roomOccupiedBeds Occupied
+
+                                    </span>
+
+                                </div>
+
+                            </div>
+
+
+                            <!-- ================================================= -->
+                            <!-- ROOM DETAILS -->
+                            <!-- ================================================= -->
+
+                            <div class="details-list">
+
+
+                                <div class="detail-row">
+
+                                    <span>
+
+                                        <i class="bi bi-people"></i>
+
+                                        Capacity
+
+                                    </span>
+
+                                    <strong>
+                                        @room.Capacity
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="detail-row">
+
+                                    <span>
+
+                                        <i class="bi bi-calendar-month"></i>
+
+                                        Monthly Rent
+
+                                    </span>
+
+                                    <strong class="rent">
+
+                                        ₹@room.MonthlyRent.ToString("N2")
+
+                                    </strong>
+
+                                </div>
+
+
+                                <div class="detail-row">
+
+                                    <span>
+
+                                        <i class="bi bi-calendar-day"></i>
+
+                                        Daily Rent
+
+                                    </span>
+
+                                    <strong class="rent">
+
+                                        ₹@room.DailyRent.ToString("N2")
+
+                                    </strong>
+
+                                </div>
+
+                            </div>
+
+
+                        </div>
+
+
+                        <!-- ================================================= -->
+                        <!-- CARD FOOTER -->
+                        <!-- ================================================= -->
+
+                        <div class="room-card-footer">
+
+
+                            <div class="action-row">
+
+
+                                <!-- Details -->
+
+                                <a asp-controller="Room"
+                                   asp-action="Details"
+                                   asp-route-id="@room.RoomId"
+                                   class="btn btn-outline-primary">
+
+                                    <i class="bi bi-eye"></i>
+
+                                    Details
+
+                                </a>
+
+
+                                <!-- Edit -->
+
+                                <a asp-controller="Room"
+                                   asp-action="Edit"
+                                   asp-route-id="@room.RoomId"
+                                   class="btn btn-outline-secondary">
+
+                                    <i class="bi bi-pencil-square"></i>
+
+                                    Edit
+
+                                </a>
+
+
+                                <!-- Delete -->
+
+                                <form asp-controller="Room"
+                                      asp-action="Delete"
+                                      method="post"
+                                      class="delete-form"
+                                      onsubmit="return confirm('Are you sure you want to delete Room @room.RoomNumber?');">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <input type="hidden"
+                                           name="id"
+                                           value="@room.RoomId" />
+
+
+                                    <button type="submit"
+                                            class="btn btn-outline-danger">
+
+                                        <i class="bi bi-trash"></i>
+
+                                        Delete
+
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+
+                            <!-- Manage Beds -->
+
+                            <a asp-controller="Bed"
+                               asp-action="Index"
+                               asp-route-roomId="@room.RoomId"
+                               class="manage-beds-btn">
+
+                                <i class="bi bi-grid-3x3-gap-fill"></i>
+
+                                Manage Beds
+
+                                <i class="bi bi-arrow-right ms-auto"></i>
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+            }
+
+        </div>
+    }
+    else
+    {
+        <!-- ========================================================= -->
+        <!-- EMPTY STATE -->
+        <!-- ========================================================= -->
+
+        <div class="empty-card">
+
+            <div class="empty-icon">
+
+                <i class="bi bi-door-closed"></i>
+
+            </div>
+
+
+            <h3>
+                No Rooms Found
+            </h3>
+
+
+            <p>
+                You haven't added any rooms yet.
+                Create your first room to start managing beds.
+            </p>
+
+
+            <a asp-controller="Room"
+               asp-action="Create"
+               class="btn btn-primary btn-lg">
+
+                <i class="bi bi-plus-lg"></i>
+
+                Add Your First Room
+
+            </a>
+
+        </div>
+    }
+
+</div>
+
+
+<style>
+
+    /* ========================================================= */
+    /* PAGE HEADER */
+    /* ========================================================= */
+
+    .page-icon-title {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+
+    .page-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 15px;
+        background: #e7f1ff;
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+    }
+
+
+    /* ========================================================= */
+    /* SUMMARY */
+    /* ========================================================= */
+
+    .summary-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 20px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 3px 15px rgba(0,0,0,.06);
+        height: 100%;
+        transition: .2s;
+    }
+
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(0,0,0,.08);
+        }
+
+
+        .summary-card span {
+            display: block;
+            color: #6c757d;
+            font-size: 13px;
+            margin-bottom: 3px;
+        }
+
+
+        .summary-card h3 {
+            margin: 0;
+            font-weight: 700;
+        }
+
+
+    .summary-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+
+
+        .summary-icon.rooms {
+            background: #e7f1ff;
+            color: #0d6efd;
+        }
+
+
+        .summary-icon.available {
+            background: #e8f7ee;
+            color: #198754;
+        }
+
+
+        .summary-icon.occupied {
+            background: #fff0f0;
+            color: #dc3545;
+        }
+
+
+    /* ========================================================= */
+    /* ROOM CARD */
+    /* ========================================================= */
+
+    .room-card {
+        background: white;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 4px 18px rgba(0,0,0,.06);
+        transition: transform .2s, box-shadow .2s;
+        border: 1px solid #f0f0f0;
+        display: flex;
+        flex-direction: column;
+    }
+
+
+        .room-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0,0,0,.10);
+        }
+
+
+    /* ========================================================= */
+    /* CARD HEADER */
+    /* ========================================================= */
+
+    .room-card-header {
+        padding: 19px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        background: linear-gradient( 135deg, #f5f9ff, #ffffff );
+        border-bottom: 1px solid #edf0f2;
+    }
+
+
+    .room-number {
+        font-size: 18px;
+        font-weight: 700;
+        color: #212529;
+    }
+
+
+        .room-number i {
+            color: #0d6efd;
+            margin-right: 5px;
+        }
+
+
+    .pg-name {
+        color: #6c757d;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+
+
+        .pg-name i {
+            margin-right: 4px;
+        }
+
+
+    /* ========================================================= */
+    /* STATUS */
+    /* ========================================================= */
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 7px 11px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+
+        .status-badge.available {
+            background: #e8f7ee;
+            color: #198754;
+        }
+
+
+        .status-badge.full {
+            background: #fff0f0;
+            color: #dc3545;
+        }
+
+
+    /* ========================================================= */
+    /* CARD BODY */
+    /* ========================================================= */
+
+    .room-card-body {
+        padding: 20px;
+        flex: 1;
+    }
+
+
+    /* ========================================================= */
+    /* TAGS */
+    /* ========================================================= */
+
+    .room-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+        margin-bottom: 18px;
+    }
+
+
+    .room-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+
+        .room-tag.ac {
+            background: #e7f1ff;
+            color: #0d6efd;
+        }
+
+
+        .room-tag.non-ac {
+            background: #f1f3f5;
+            color: #495057;
+        }
+
+
+        .room-tag.sharing {
+            background: #f3e8ff;
+            color: #6f42c1;
+        }
+
+
+    /* ========================================================= */
+    /* BED SECTION */
+    /* ========================================================= */
+
+    .bed-section {
+        padding: 15px;
+        border-radius: 12px;
+        background: #f8f9fa;
+        margin-bottom: 17px;
+    }
+
+
+    .section-label {
+        color: #495057;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+
+        .section-label i {
+            color: #0d6efd;
+            margin-right: 4px;
+        }
+
+
+    .progress {
+        background: #e9ecef;
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+
+    .progress-bar {
+        border-radius: 20px;
+    }
+
+
+    .bed-counts {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+    }
+
+
+    .available-count {
+        color: #198754;
+        font-weight: 600;
+    }
+
+
+    .occupied-count {
+        color: #dc3545;
+        font-weight: 600;
+    }
+
+
+    /* ========================================================= */
+    /* DETAILS */
+    /* ========================================================= */
+
+    .details-list {
+        border-top: 1px solid #f0f0f0;
+    }
+
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 11px 0;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 13px;
+    }
+
+
+        .detail-row:last-child {
+            border-bottom: 0;
+        }
+
+
+        .detail-row span {
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+
+            .detail-row span i {
+                color: #0d6efd;
+            }
+
+
+        .detail-row strong {
+            color: #343a40;
+        }
+
+
+        .detail-row .rent {
+            color: #198754;
+            font-weight: 700;
+        }
+
+
+    /* ========================================================= */
+    /* FOOTER */
+    /* ========================================================= */
+
+    .room-card-footer {
+        padding: 15px 20px 20px;
+        border-top: 1px solid #eeeeee;
+        background: white;
+    }
+
+
+    .action-row {
+        display: flex;
+        gap: 7px;
+    }
+
+
+        .action-row .btn {
+            flex: 1;
+            border-radius: 9px;
+            font-size: 12px;
+            padding: 8px 5px;
+            white-space: nowrap;
+        }
+
+
+    .delete-form {
+        flex: 1;
+    }
+
+
+        .delete-form .btn {
+            width: 100%;
+        }
+
+
+    .manage-beds-btn {
+        margin-top: 9px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 9px 12px;
+        border-radius: 9px;
+        background: #f8f9fa;
+        color: #495057;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 600;
+        transition: .2s;
+    }
+
+
+        .manage-beds-btn:hover {
+            background: #e7f1ff;
+            color: #0d6efd;
+        }
+
+
+    /* ========================================================= */
+    /* EMPTY */
+    /* ========================================================= */
+
+    .empty-card {
+        text-align: center;
+        background: white;
+        border-radius: 18px;
+        padding: 70px 25px;
+        box-shadow: 0 4px 18px rgba(0,0,0,.06);
+    }
+
+
+    .empty-icon {
+        width: 85px;
+        height: 85px;
+        border-radius: 22px;
+        margin: 0 auto 20px;
+        background: #f1f3f5;
+        color: #adb5bd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+    }
+
+
+    .empty-card h3 {
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+
+    .empty-card p {
+        color: #6c757d;
+        max-width: 450px;
+        margin: 0 auto 22px;
+    }
+
+
+    /* ========================================================= */
+    /* MOBILE */
+    /* ========================================================= */
+
+    @@media (max-width: 768px) {
+
+        .page-icon-title {
+            align-items: flex-start;
+        }
+
+
+        .container > .d-flex:first-child {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 15px;
+        }
+
+
+            .container > .d-flex:first-child > div:last-child {
+                width: 100%;
+                display: flex;
+                gap: 8px;
+            }
+
+
+                .container > .d-flex:first-child > div:last-child .btn {
+                    flex: 1;
+                }
+    }
+
+
+    @@media (max-width: 576px) {
+
+        .page-icon {
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+        }
+
+
+        .page-icon-title h2 {
+            font-size: 22px;
+        }
+
+
+        .room-card-header {
+            padding: 16px;
+        }
+
+
+        .room-card-body {
+            padding: 16px;
+        }
+
+
+        .room-card-footer {
+            padding: 13px 16px 16px;
+        }
+
+
+        .action-row {
+            flex-wrap: wrap;
+        }
+
+
+            .action-row > a,
+            .delete-form {
+                flex: 1 1 calc(50% - 5px);
+            }
+
+
+                .action-row > a:first-child {
+                    flex-basis: 100%;
+                }
+    }
+
+</style>

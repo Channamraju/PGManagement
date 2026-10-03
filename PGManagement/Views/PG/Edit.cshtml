@@ -1,0 +1,255 @@
+﻿@model PGManagement.Models.PG
+
+@{
+    ViewData["Title"] = "Edit PG";
+}
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+
+            <h2 class="fw-bold">
+                <i class="bi bi-pencil-square"></i>
+                Edit PG
+            </h2>
+
+            <p class="text-muted mb-0">
+                Update your PG information.
+            </p>
+
+        </div>
+
+        <a asp-action="Details"
+           asp-route-id="@Model.PGId"
+           class="btn btn-outline-secondary">
+
+            <i class="bi bi-arrow-left"></i>
+            Back
+
+        </a>
+
+    </div>
+
+
+    <div class="card shadow-sm border-0">
+
+        <div class="card-body p-4">
+
+            <form asp-action="Edit"
+                  asp-route-id="@Model.PGId"
+                  method="post"
+                  enctype="multipart/form-data">
+
+                @Html.AntiForgeryToken()
+
+                <input type="hidden"
+                       asp-for="PGId" />
+
+                <div asp-validation-summary="ModelOnly"
+                     class="text-danger mb-3">
+                </div>
+
+
+                <!-- PG NAME -->
+
+                <div class="mb-3">
+
+                    <label asp-for="PGName"
+                           class="form-label fw-bold">
+
+                        PG Name
+
+                    </label>
+
+                    <input asp-for="PGName"
+                           class="form-control"
+                           placeholder="Enter PG name" />
+
+                    <span asp-validation-for="PGName"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- ADDRESS -->
+
+                <div class="mb-3">
+
+                    <label asp-for="Address"
+                           class="form-label fw-bold">
+
+                        Address
+
+                    </label>
+
+                    <textarea asp-for="Address"
+                              class="form-control"
+                              rows="3"
+                              placeholder="Enter PG address">
+                    </textarea>
+
+                    <span asp-validation-for="Address"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- CITY -->
+
+                <div class="mb-3">
+
+                    <label asp-for="City"
+                           class="form-label fw-bold">
+
+                        City
+
+                    </label>
+
+                    <input asp-for="City"
+                           class="form-control"
+                           placeholder="Enter city" />
+
+                    <span asp-validation-for="City"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <!-- DESCRIPTION -->
+
+                <div class="mb-3">
+
+                    <label asp-for="Description"
+                           class="form-label fw-bold">
+
+                        Description
+
+                    </label>
+
+                    <textarea asp-for="Description"
+                              class="form-control"
+                              rows="4"
+                              placeholder="Enter description">
+                    </textarea>
+
+                </div>
+
+
+                <!-- GENDER -->
+
+                <div class="mb-3">
+
+                    <label asp-for="GenderType"
+                           class="form-label fw-bold">
+
+                        Gender
+
+                    </label>
+
+                    <select asp-for="GenderType"
+                            class="form-select">
+
+                        <option value="Any">
+                            Any
+                        </option>
+
+                        <option value="Male">
+                            Male
+                        </option>
+
+                        <option value="Female">
+                            Female
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- CURRENT IMAGE -->
+                @if (!string.IsNullOrEmpty(Model.ImagePath))
+                {
+                    <div class="mb-3">
+
+                        <label class="form-label fw-bold">
+                            Current Image
+                        </label>
+
+                        <div>
+
+                            <img src="@Model.ImagePath"
+                                 alt="@Model.PGName"
+                                 style="
+                            width:250px;
+                            height:180px;
+                            object-fit:cover;
+                            border-radius:8px;
+                            " />
+
+                        </div>
+
+                    </div>
+                }
+
+
+                <!-- NEW IMAGE -->
+
+                <div class="mb-4">
+
+                    <label class="form-label fw-bold">
+                        Change PG Image
+                    </label>
+
+                    <input type="file"
+                           name="imageFile"
+                           class="form-control"
+                           accept=".jpg,.jpeg,.png,.webp" />
+
+                    <small class="text-muted">
+                        Leave empty to keep the current image.
+                        JPG, JPEG, PNG or WEBP. Maximum 5 MB.
+                    </small>
+
+                </div>
+
+
+                <!-- BUTTONS -->
+
+                <div class="d-flex gap-2">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        <i class="bi bi-save"></i>
+                        Update PG
+
+                    </button>
+
+                    <a asp-action="Details"
+                       asp-route-id="@Model.PGId"
+                       class="btn btn-secondary">
+
+                        Cancel
+
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

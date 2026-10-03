@@ -1,0 +1,2442 @@
+﻿@model PGManagement.Models.User
+
+@{
+    ViewData["Title"] = "Dashboard";
+
+    // ==============================
+    // USER INFORMATION
+    // ==============================
+
+    var userName = Model?.FullName;
+
+    if (string.IsNullOrWhiteSpace(userName))
+    {
+        userName = ViewBag.UserName as string;
+    }
+
+    if (string.IsNullOrWhiteSpace(userName))
+    {
+        userName = "User";
+    }
+
+    var userImage = Model?.ProfileImagePath;
+
+    if (string.IsNullOrWhiteSpace(userImage))
+    {
+        userImage = ViewBag.UserImage as string;
+    }
+
+    // ==============================
+    // FIRST NAME
+    // ==============================
+
+    var firstName = userName;
+
+    var firstNameParts = userName.Split(
+        ' ',
+        StringSplitOptions.RemoveEmptyEntries);
+
+    if (firstNameParts.Length > 0)
+    {
+        firstName = firstNameParts[0];
+    }
+
+    // ==============================
+    // INITIALS
+    // ==============================
+
+    var initials = "U";
+
+    var nameParts = userName.Split(
+        ' ',
+        StringSplitOptions.RemoveEmptyEntries);
+
+    if (nameParts.Length >= 2)
+    {
+        var firstInitial =
+            nameParts[0].Substring(0, 1);
+
+        var lastIndex =
+            nameParts.Length - 1;
+
+        var lastInitial =
+            nameParts[lastIndex].Substring(0, 1);
+
+        initials =
+            (firstInitial + lastInitial).ToUpper();
+    }
+    else if (nameParts.Length == 1)
+    {
+        initials =
+            nameParts[0].Substring(0, 1).ToUpper();
+    }
+
+    // ==============================
+    // STATISTICS
+    // ==============================
+
+    int totalBookings =
+        ViewBag.TotalBookings ?? 0;
+
+    int confirmedBookings =
+        ViewBag.ConfirmedBookings ?? 0;
+
+    int pendingBookings =
+        ViewBag.PendingBookings ?? 0;
+
+    int completedBookings =
+        ViewBag.CompletedBookings ?? 0;
+
+    decimal totalPaid =
+        ViewBag.TotalPaid ?? 0m;
+
+    // ==============================
+    // CURRENT STAY
+    // ==============================
+
+    int confirmedBookingId =
+        ViewBag.ConfirmedBookingId ?? 0;
+
+    string pgName =
+        ViewBag.PGName ?? "-";
+
+    string roomNumber =
+        ViewBag.RoomNumber ?? "-";
+
+    string bedNumber =
+        ViewBag.BedNumber ?? "-";
+
+    string stayType =
+        ViewBag.StayType ?? "";
+
+    DateTime? startDate =
+        ViewBag.StartDate as DateTime?;
+
+    DateTime? endDate =
+        ViewBag.EndDate as DateTime?;
+
+    decimal rentAmount =
+        ViewBag.RentAmount ?? 0m;
+
+    decimal nextPaymentAmount =
+        ViewBag.NextPaymentAmount ?? 0m;
+
+    DateTime? nextPaymentDate =
+        ViewBag.NextPaymentDate as DateTime?;
+
+    bool canPayNow =
+        ViewBag.CanPayNow ?? false;
+
+    bool hasCurrentStay =
+        confirmedBookingId > 0;
+
+    bool isMonthly =
+        stayType == "Monthly";
+
+    bool isDaily =
+        stayType == "Daily";
+}
+
+
+<!-- =========================================================
+     BOOTSTRAP ICONS
+========================================================= -->
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+
+<style>
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        background: #f5f7fb;
+        color: #172033;
+        font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    a {
+        text-decoration: none;
+    }
+
+
+    /* =========================================================
+           NAVBAR
+        ========================================================= */
+
+    .top-navbar {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        min-height: 74px;
+        background: #ffffff;
+        border-bottom: 1px solid #e7ebf2;
+        box-shadow: 0 3px 15px rgba(15, 23, 42, 0.05);
+    }
+
+
+    .nav-container {
+        max-width: 1350px;
+        min-height: 74px;
+        margin: auto;
+        padding: 0 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+    }
+
+
+    /* =========================================================
+           BRAND
+        ========================================================= */
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+        color: #172033;
+        flex-shrink: 0;
+    }
+
+        .brand:hover {
+            color: #172033;
+        }
+
+    .brand-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient( 135deg, #1769ff, #4f46e5 );
+        color: #ffffff;
+        font-size: 19px;
+        box-shadow: 0 7px 18px rgba(37, 99, 235, .23);
+    }
+
+    .brand-title {
+        display: block;
+        font-size: 18px;
+        font-weight: 800;
+        line-height: 1.1;
+    }
+
+    .brand-subtitle {
+        display: block;
+        margin-top: 3px;
+        color: #9aa3b2;
+        font-size: 10px;
+        font-weight: 600;
+    }
+
+
+    /* =========================================================
+           MAIN NAV
+        ========================================================= */
+
+    .main-nav {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        flex: 1;
+    }
+
+
+    .nav-link-custom {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 11px;
+        border-radius: 10px;
+        color: #667085;
+        font-size: 12px;
+        font-weight: 650;
+        white-space: nowrap;
+        transition: .2s ease;
+    }
+
+
+        .nav-link-custom:hover {
+            color: #1769ff;
+            background: #eff5ff;
+        }
+
+
+        .nav-link-custom.active {
+            color: #1769ff;
+            background: #edf4ff;
+        }
+
+
+        .nav-link-custom i {
+            font-size: 15px;
+        }
+
+
+    /* =========================================================
+           RIGHT NAV
+        ========================================================= */
+
+    .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+
+
+    .nav-icon-btn {
+        width: 39px;
+        height: 39px;
+        border: 1px solid #e4e8ef;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #667085;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: .2s ease;
+    }
+
+
+        .nav-icon-btn:hover {
+            color: #1769ff;
+            background: #f2f6ff;
+            border-color: #d5e2fb;
+        }
+
+
+    /* =========================================================
+           PROFILE
+        ========================================================= */
+
+    .profile-button {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 4px 7px;
+        border-radius: 12px;
+        color: #172033;
+        transition: .2s ease;
+    }
+
+
+        .profile-button:hover {
+            background: #f5f7fb;
+            color: #172033;
+        }
+
+
+    .profile-avatar {
+        width: 39px;
+        height: 39px;
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient( 135deg, #1769ff, #4f46e5 );
+        color: white;
+        font-size: 13px;
+        font-weight: 800;
+    }
+
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+
+    .profile-name {
+        display: block;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #172033;
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+
+    .profile-role {
+        display: block;
+        margin-top: 2px;
+        color: #98a1b1;
+        font-size: 10px;
+    }
+
+
+    /* =========================================================
+           LOGOUT BUTTON
+        ========================================================= */
+
+    .logout-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        padding: 10px 13px;
+        border-radius: 10px;
+        background: #fff1f1;
+        color: #dc3545;
+        font-size: 11px;
+        font-weight: 750;
+        transition: .2s ease;
+    }
+
+
+        .logout-button i {
+            font-size: 15px;
+        }
+
+
+        .logout-button:hover {
+            background: #dc3545;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+
+    /* =========================================================
+           MAIN
+        ========================================================= */
+
+    .dashboard-container {
+        max-width: 1350px;
+        margin: auto;
+        padding: 30px 28px 45px;
+    }
+
+
+    /* =========================================================
+           PAGE HEADER
+        ========================================================= */
+
+    .page-header {
+        margin-bottom: 22px;
+    }
+
+
+    .page-label {
+        margin-bottom: 4px;
+        color: #1769ff;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.6px;
+    }
+
+
+    .page-title {
+        margin: 0;
+        color: #172033;
+        font-size: 28px;
+        font-weight: 800;
+    }
+
+
+    .page-description {
+        margin-top: 5px;
+        color: #8993a5;
+        font-size: 13px;
+    }
+
+
+    /* =========================================================
+           WELCOME
+        ========================================================= */
+
+    .welcome-banner {
+        position: relative;
+        overflow: hidden;
+        min-height: 220px;
+        padding: 34px 38px;
+        border-radius: 22px;
+        background: linear-gradient( 115deg, #1268f6, #2778f5 55%, #4e70e4 );
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 18px 40px rgba(37, 99, 235, .17);
+    }
+
+
+    .welcome-content {
+        position: relative;
+        z-index: 3;
+    }
+
+
+    .welcome-small {
+        margin-bottom: 7px;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+    }
+
+
+    .welcome-title {
+        margin: 0;
+        font-size: 31px;
+        font-weight: 800;
+        letter-spacing: -.7px;
+    }
+
+
+    .welcome-text {
+        max-width: 580px;
+        margin: 9px 0 20px;
+        color: rgba(255,255,255,.88);
+        font-size: 13px;
+    }
+
+
+    .welcome-features {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+
+    .welcome-feature {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255,255,255,.91);
+        font-size: 11px;
+    }
+
+
+    .find-pg-button {
+        position: relative;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 18px;
+        border-radius: 11px;
+        background: white;
+        color: #1769ff;
+        font-size: 12px;
+        font-weight: 750;
+        box-shadow: 0 8px 22px rgba(0,0,0,.13);
+        transition: .2s ease;
+    }
+
+
+        .find-pg-button:hover {
+            color: #0d55d8;
+            transform: translateY(-2px);
+        }
+
+
+    .welcome-circle-one {
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        right: 80px;
+        top: -150px;
+        border: 1px solid rgba(255,255,255,.15);
+        border-radius: 50%;
+    }
+
+
+    .welcome-circle-two {
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        right: 180px;
+        bottom: -100px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.06);
+    }
+
+
+    /* =========================================================
+           STATS
+        ========================================================= */
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        margin-top: 22px;
+    }
+
+
+    .stat-card {
+        min-height: 140px;
+        padding: 20px;
+        border: 1px solid #e4e9f1;
+        border-radius: 17px;
+        background: #ffffff;
+        transition: .2s ease;
+    }
+
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(15,23,42,.07);
+        }
+
+
+    .stat-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+
+    .stat-label {
+        color: #687386;
+        font-size: 11px;
+        font-weight: 650;
+    }
+
+
+    .stat-icon {
+        width: 39px;
+        height: 39px;
+        border-radius: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+
+
+    .icon-blue {
+        color: #1769ff;
+        background: #edf4ff;
+    }
+
+
+    .icon-green {
+        color: #0a995d;
+        background: #e8f8ef;
+    }
+
+
+    .icon-yellow {
+        color: #b77c00;
+        background: #fff5da;
+    }
+
+
+    .icon-purple {
+        color: #7651d9;
+        background: #f0eaff;
+    }
+
+
+    .stat-value {
+        margin-top: 13px;
+        color: #121a2a;
+        font-size: 26px;
+        font-weight: 800;
+    }
+
+
+    .stat-bottom {
+        margin-top: 5px;
+        color: #99a2b0;
+        font-size: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+
+    /* =========================================================
+           SECTION CARD
+        ========================================================= */
+
+    .section-card {
+        margin-top: 23px;
+        overflow: hidden;
+        background: white;
+        border: 1px solid #e3e8f0;
+        border-radius: 20px;
+        box-shadow: 0 5px 20px rgba(15,23,42,.025);
+    }
+
+
+    /* =========================================================
+           CURRENT STAY HEADER
+        ========================================================= */
+
+    .stay-header {
+        padding: 22px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #edf0f5;
+    }
+
+
+    .stay-title-area {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+    }
+
+
+    .stay-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 13px;
+        background: #edf4ff;
+        color: #1769ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+
+    .stay-label {
+        color: #1769ff;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 1.4px;
+    }
+
+
+    .stay-name {
+        margin: 4px 0;
+        color: #172033;
+        font-size: 18px;
+        font-weight: 800;
+    }
+
+
+    .stay-location {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        color: #8490a3;
+        font-size: 10px;
+    }
+
+
+        .stay-location span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+
+    .stay-type {
+        padding: 8px 13px;
+        border-radius: 30px;
+        background: #fff4d8;
+        color: #a87300;
+        font-size: 10px;
+        font-weight: 750;
+    }
+
+
+    /* =========================================================
+           STAY DETAILS
+        ========================================================= */
+
+    .stay-details {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+
+    .stay-detail {
+        min-height: 90px;
+        padding: 18px 23px;
+        border-right: 1px solid #edf0f5;
+        display: flex;
+        align-items: center;
+        gap: 11px;
+    }
+
+
+        .stay-detail:last-child {
+            border-right: 0;
+        }
+
+
+    .detail-icon {
+        width: 40px;
+        height: 40px;
+        flex-shrink: 0;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f0f5ff;
+        color: #1769ff;
+    }
+
+
+        .detail-icon.yellow {
+            background: #fff5da;
+            color: #b77c00;
+        }
+
+
+        .detail-icon.green {
+            background: #e8f8ef;
+            color: #0b9860;
+        }
+
+
+        .detail-icon.purple {
+            background: #f0eaff;
+            color: #7651d9;
+        }
+
+
+    .detail-label {
+        display: block;
+        margin-bottom: 4px;
+        color: #919aaa;
+        font-size: 9px;
+    }
+
+
+    .detail-value {
+        color: #172033;
+        font-size: 12px;
+        font-weight: 750;
+    }
+
+
+        .detail-value.success {
+            color: #07945b;
+        }
+
+
+    /* =========================================================
+           PAYMENT FOOTER
+        ========================================================= */
+
+    .payment-footer {
+        min-height: 55px;
+        padding: 0 24px;
+        border-top: 1px solid #edf0f5;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+
+    .payment-status {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: #07945b;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+
+    .payment-link {
+        color: #1769ff;
+        font-size: 10px;
+        font-weight: 750;
+    }
+
+
+        .payment-link:hover {
+            text-decoration: underline;
+        }
+
+
+    /* =========================================================
+           EMPTY STAY
+        ========================================================= */
+
+    .empty-stay {
+        padding: 48px 25px;
+        text-align: center;
+    }
+
+
+    .empty-icon {
+        width: 62px;
+        height: 62px;
+        margin: auto auto 15px;
+        border-radius: 17px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #edf4ff;
+        color: #1769ff;
+        font-size: 25px;
+    }
+
+
+    .empty-stay h4 {
+        margin-bottom: 6px;
+        font-size: 17px;
+        font-weight: 800;
+    }
+
+
+    .empty-stay p {
+        margin-bottom: 18px;
+        color: #8993a5;
+        font-size: 11px;
+    }
+
+
+    .empty-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 17px;
+        border-radius: 10px;
+        background: #1769ff;
+        color: white;
+        font-size: 11px;
+        font-weight: 750;
+    }
+
+
+        .empty-button:hover {
+            color: white;
+            background: #0d5bdd;
+        }
+
+
+    /* =========================================================
+           PAYMENT ALERT
+        ========================================================= */
+
+    .payment-alert {
+        margin-top: 17px;
+        padding: 16px 19px;
+        border: 1px solid #f5dfaa;
+        border-radius: 14px;
+        background: #fff9e9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 15px;
+    }
+
+
+    .payment-alert-left {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+    }
+
+
+    .payment-alert-icon {
+        width: 39px;
+        height: 39px;
+        border-radius: 10px;
+        background: #fff0c5;
+        color: #ad7900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+    .payment-alert-title {
+        margin: 0 0 3px;
+        color: #725100;
+        font-size: 12px;
+        font-weight: 800;
+    }
+
+
+    .payment-alert-text {
+        margin: 0;
+        color: #92733a;
+        font-size: 10px;
+    }
+
+
+    .pay-now-button {
+        padding: 10px 17px;
+        border-radius: 9px;
+        background: #1769ff;
+        color: white;
+        font-size: 10px;
+        font-weight: 750;
+        white-space: nowrap;
+    }
+
+
+        .pay-now-button:hover {
+            color: white;
+            background: #0d5bdd;
+        }
+
+
+    /* =========================================================
+           QUICK ACTIONS
+        ========================================================= */
+
+    .quick-section {
+        margin-top: 24px;
+    }
+
+
+    .section-heading {
+        margin-bottom: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+
+        .section-heading h3 {
+            margin: 0;
+            font-size: 17px;
+            font-weight: 800;
+        }
+
+
+        .section-heading span {
+            color: #929bab;
+            font-size: 10px;
+        }
+
+
+    .quick-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+    }
+
+
+    .quick-card {
+        min-height: 120px;
+        padding: 19px;
+        background: white;
+        border: 1px solid #e4e9f1;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: .2s ease;
+    }
+
+
+        .quick-card:hover {
+            transform: translateY(-3px);
+            border-color: #d4e1f8;
+            box-shadow: 0 12px 25px rgba(15,23,42,.06);
+        }
+
+
+    .quick-icon {
+        width: 44px;
+        height: 44px;
+        flex-shrink: 0;
+        border-radius: 12px;
+        background: #edf4ff;
+        color: #1769ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 19px;
+    }
+
+
+    .quick-card:nth-child(2) .quick-icon {
+        background: #e8f8ef;
+        color: #07945b;
+    }
+
+
+    .quick-card:nth-child(3) .quick-icon {
+        background: #f0eaff;
+        color: #7651d9;
+    }
+
+
+    .quick-card:nth-child(4) .quick-icon {
+        background: #fff4d8;
+        color: #b77c00;
+    }
+
+
+    .quick-content {
+        min-width: 0;
+    }
+
+
+        .quick-content h5 {
+            margin: 0 0 4px;
+            color: #172033;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+
+        .quick-content p {
+            margin: 0;
+            color: #8c96a6;
+            font-size: 10px;
+            line-height: 1.45;
+        }
+
+
+    .quick-arrow {
+        margin-left: auto;
+        color: #adb5c2;
+        font-size: 15px;
+    }
+
+
+    /* =========================================================
+           FOOTER
+        ========================================================= */
+
+    .dashboard-footer {
+        margin-top: 35px;
+        padding-top: 18px;
+        border-top: 1px solid #e4e8ef;
+        text-align: center;
+        color: #9ba4b2;
+        font-size: 10px;
+    }
+
+
+    /* =========================================================
+           TABLET
+        ========================================================= */
+
+    @@media (max-width: 1200px) {
+
+        .nav-link-custom {
+            padding: 9px 8px;
+        }
+
+            .nav-link-custom span {
+                display: none;
+            }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .quick-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .stay-details {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .stay-detail:nth-child(2) {
+            border-right: 0;
+        }
+
+        .stay-detail:nth-child(-n+2) {
+            border-bottom: 1px solid #edf0f5;
+        }
+    }
+
+
+    /* =========================================================
+           MOBILE
+        ========================================================= */
+
+    @@media (max-width: 768px) {
+
+        .top-navbar {
+            position: relative;
+        }
+
+        .nav-container {
+            padding: 12px 16px;
+            flex-wrap: wrap;
+            min-height: auto;
+        }
+
+        .main-nav {
+            order: 3;
+            width: 100%;
+            overflow-x: auto;
+            justify-content: flex-start;
+            padding-bottom: 3px;
+        }
+
+        .nav-link-custom {
+            flex-shrink: 0;
+            padding: 8px 12px;
+        }
+
+            .nav-link-custom span {
+                display: inline;
+            }
+
+        .profile-info {
+            display: none;
+        }
+
+        .dashboard-container {
+            padding: 24px 16px 40px;
+        }
+
+        .page-title {
+            font-size: 24px;
+        }
+
+        .welcome-banner {
+            min-height: 245px;
+            padding: 27px 23px;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: flex-start;
+        }
+
+        .welcome-title {
+            font-size: 25px;
+        }
+
+        .find-pg-button {
+            margin-top: 15px;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .stat-card {
+            padding: 16px;
+        }
+
+        .stat-value {
+            font-size: 22px;
+        }
+
+        .quick-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stay-header {
+            padding: 19px;
+        }
+
+        .stay-details {
+            grid-template-columns: 1fr;
+        }
+
+        .stay-detail {
+            border-right: 0 !important;
+            border-bottom: 1px solid #edf0f5;
+        }
+
+            .stay-detail:last-child {
+                border-bottom: 0;
+            }
+        /* MOBILE LOGOUT */
+
+        .logout-button span {
+            display: none;
+        }
+
+        .logout-button {
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            justify-content: center;
+        }
+    }
+
+
+    /* =========================================================
+           SMALL MOBILE
+        ========================================================= */
+
+    @@media (max-width: 480px) {
+
+        .brand-subtitle {
+            display: none;
+        }
+
+        .nav-icon-btn {
+            width: 35px;
+            height: 35px;
+        }
+
+        .profile-avatar {
+            width: 35px;
+            height: 35px;
+        }
+
+        .logout-button {
+            width: 35px;
+            height: 35px;
+        }
+
+        .welcome-banner {
+            border-radius: 17px;
+        }
+
+        .welcome-title {
+            font-size: 22px;
+        }
+
+        .welcome-text {
+            font-size: 11px;
+        }
+
+        .welcome-features {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .stay-header {
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .stay-name {
+            font-size: 16px;
+        }
+
+        .stay-type {
+            padding: 6px 9px;
+            font-size: 8px;
+        }
+
+        .payment-alert {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .pay-now-button {
+            width: 100%;
+            text-align: center;
+        }
+    }
+
+</style>
+
+
+<!-- =========================================================
+     NAVBAR
+========================================================= -->
+
+<nav class="top-navbar">
+
+    <div class="nav-container">
+
+
+        <!-- BRAND -->
+
+        <a asp-controller="User"
+           asp-action="Dashboard"
+           class="brand">
+
+            <div class="brand-icon">
+
+                <i class="bi bi-buildings-fill"></i>
+
+            </div>
+
+            <div>
+
+                <span class="brand-title">
+                    PG Manager
+                </span>
+
+                <span class="brand-subtitle">
+                    User Portal
+                </span>
+
+            </div>
+
+        </a>
+
+
+        <!-- =================================================
+             NAVIGATION
+        ================================================= -->
+
+        <div class="main-nav">
+
+
+            <!-- DASHBOARD -->
+
+            <a asp-controller="User"
+               asp-action="Dashboard"
+               class="nav-link-custom active">
+
+                <i class="bi bi-grid-1x2-fill"></i>
+
+                <span>
+                    Dashboard
+                </span>
+
+            </a>
+
+
+            <!-- FIND PG -->
+
+            <a asp-controller="UserPG"
+               asp-action="Index"
+               class="nav-link-custom">
+
+                <i class="bi bi-search"></i>
+
+                <span>
+                    Find PG
+                </span>
+
+            </a>
+
+
+            <!-- BOOKINGS -->
+
+            <a asp-controller="Booking"
+               asp-action="MyBookings"
+               class="nav-link-custom">
+
+                <i class="bi bi-calendar-check"></i>
+
+                <span>
+                    My Bookings
+                </span>
+
+            </a>
+
+
+            <!-- PAYMENTS -->
+
+            <a asp-controller="Payment"
+               asp-action="History"
+               class="nav-link-custom">
+
+                <i class="bi bi-credit-card"></i>
+
+                <span>
+                    Payments
+                </span>
+
+            </a>
+
+
+            <!-- FOOD MENU -->
+
+            <a asp-controller="FoodMenu"
+               asp-action="Index"
+               class="nav-link-custom">
+
+                <i class="bi bi-egg-fried"></i>
+
+                <span>
+                    Food Menu
+                </span>
+
+            </a>
+
+
+            <!-- PROFILE -->
+
+            <a asp-controller="User"
+               asp-action="Profile"
+               class="nav-link-custom">
+
+                <i class="bi bi-person"></i>
+
+                <span>
+                    Profile
+                </span>
+
+            </a>
+
+        </div>
+
+
+        <!-- =================================================
+             RIGHT NAV
+        ================================================= -->
+
+        <div class="nav-right">
+
+
+            <!-- SEARCH -->
+
+            <a asp-controller="UserPG"
+               asp-action="Index"
+               class="nav-icon-btn"
+               title="Find PG">
+
+                <i class="bi bi-search"></i>
+
+            </a>
+
+
+            <!-- NOTIFICATIONS -->
+
+            <button type="button"
+                    class="nav-icon-btn"
+                    title="Notifications">
+
+                <i class="bi bi-bell"></i>
+
+            </button>
+
+
+            <!-- PROFILE -->
+
+            <a asp-controller="User"
+               asp-action="Profile"
+               class="profile-button">
+
+                <div class="profile-avatar">
+
+                    @if (!string.IsNullOrWhiteSpace(userImage))
+                    {
+                        <img src="@userImage"
+                             alt="Profile" />
+                    }
+                    else
+                    {
+                        @initials
+                    }
+
+                </div>
+
+
+                <div class="profile-info">
+
+                    <span class="profile-name">
+                        @userName
+                    </span>
+
+                    <span class="profile-role">
+                        Tenant
+                    </span>
+
+                </div>
+
+
+                <i class="bi bi-chevron-down"
+                   style="font-size:9px;color:#9aa3b2;">
+                </i>
+
+            </a>
+
+
+            <!-- =================================================
+                 LOGOUT
+            ================================================= -->
+
+            <a asp-controller="Account"
+               asp-action="Logout"
+               class="logout-button"
+               title="Logout"
+               onclick="return confirm('Are you sure you want to logout?');">
+
+                <i class="bi bi-box-arrow-right"></i>
+
+                <span>
+                    Logout
+                </span>
+
+            </a>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+
+<!-- =========================================================
+     MAIN DASHBOARD
+========================================================= -->
+
+<main class="dashboard-container">
+
+
+    <!-- PAGE HEADER -->
+
+    <div class="page-header">
+
+        <div class="page-label">
+            USER PORTAL
+        </div>
+
+        <h1 class="page-title">
+            Dashboard
+        </h1>
+
+        <div class="page-description">
+            Manage your stay, bookings, payments and food menu.
+        </div>
+
+    </div>
+
+
+
+    <!-- =====================================================
+         WELCOME
+    ===================================================== -->
+
+    <section class="welcome-banner">
+
+
+        <div class="welcome-content">
+
+            <div class="welcome-small">
+                GOOD DAY 👋
+            </div>
+
+
+            <h2 class="welcome-title">
+                Welcome back, @firstName!
+            </h2>
+
+
+            <p class="welcome-text">
+
+                Everything you need to manage your PG stay,
+                bookings, payments and daily food menu is right here.
+
+            </p>
+
+
+            <div class="welcome-features">
+
+                <div class="welcome-feature">
+
+                    <i class="bi bi-shield-check"></i>
+
+                    Secure account
+
+                </div>
+
+
+                <div class="welcome-feature">
+
+                    <i class="bi bi-check-circle"></i>
+
+                    Easy management
+
+                </div>
+
+
+                <div class="welcome-feature">
+
+                    <i class="bi bi-egg-fried"></i>
+
+                    Food menu
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <a asp-controller="UserPG"
+           asp-action="Index"
+           class="find-pg-button">
+
+            <i class="bi bi-search"></i>
+
+            Find a PG
+
+            <i class="bi bi-arrow-right"></i>
+
+        </a>
+
+
+        <div class="welcome-circle-one"></div>
+
+        <div class="welcome-circle-two"></div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         STATISTICS
+    ===================================================== -->
+
+    <section class="stats-grid">
+
+
+        <!-- TOTAL -->
+
+        <a asp-controller="Booking"
+           asp-action="MyBookings"
+           class="stat-card">
+
+            <div class="stat-top">
+
+                <span class="stat-label">
+                    Total Bookings
+                </span>
+
+                <div class="stat-icon icon-blue">
+
+                    <i class="bi bi-calendar-check"></i>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-value">
+                @totalBookings
+            </div>
+
+
+            <div class="stat-bottom">
+
+                <span>
+                    All bookings
+                </span>
+
+                <i class="bi bi-arrow-up-right"></i>
+
+            </div>
+
+        </a>
+
+
+
+        <!-- CONFIRMED -->
+
+        <a asp-controller="Booking"
+           asp-action="MyBookings"
+           class="stat-card">
+
+            <div class="stat-top">
+
+                <span class="stat-label">
+                    Confirmed
+                </span>
+
+                <div class="stat-icon icon-green">
+
+                    <i class="bi bi-check-circle-fill"></i>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-value">
+                @confirmedBookings
+            </div>
+
+
+            <div class="stat-bottom">
+
+                <span>
+                    Active bookings
+                </span>
+
+                <i class="bi bi-arrow-up-right"></i>
+
+            </div>
+
+        </a>
+
+
+
+        <!-- PENDING -->
+
+        <a asp-controller="Booking"
+           asp-action="MyBookings"
+           class="stat-card">
+
+            <div class="stat-top">
+
+                <span class="stat-label">
+                    Pending
+                </span>
+
+                <div class="stat-icon icon-yellow">
+
+                    <i class="bi bi-hourglass-split"></i>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-value">
+                @pendingBookings
+            </div>
+
+
+            <div class="stat-bottom">
+
+                <span>
+                    Awaiting approval
+                </span>
+
+                <i class="bi bi-arrow-up-right"></i>
+
+            </div>
+
+        </a>
+
+
+
+        <!-- TOTAL PAID -->
+
+        <a asp-controller="Payment"
+           asp-action="History"
+           class="stat-card">
+
+            <div class="stat-top">
+
+                <span class="stat-label">
+                    Total Paid
+                </span>
+
+                <div class="stat-icon icon-purple">
+
+                    <i class="bi bi-wallet2"></i>
+
+                </div>
+
+            </div>
+
+
+            <div class="stat-value">
+
+                ₹@totalPaid.ToString("N0")
+
+            </div>
+
+
+            <div class="stat-bottom">
+
+                <span>
+                    Successful payments
+                </span>
+
+                <i class="bi bi-arrow-up-right"></i>
+
+            </div>
+
+        </a>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         CURRENT STAY
+    ===================================================== -->
+
+    <section class="section-card">
+
+        @if (hasCurrentStay)
+        {
+
+            <!-- HEADER -->
+
+            <div class="stay-header">
+
+                <div class="stay-title-area">
+
+                    <div class="stay-icon">
+
+                        <i class="bi bi-house-heart-fill"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <div class="stay-label">
+                            CURRENT STAY
+                        </div>
+
+
+                        <h3 class="stay-name">
+                            @pgName
+                        </h3>
+
+
+                        <div class="stay-location">
+
+                            <span>
+
+                                <i class="bi bi-door-open"></i>
+
+                                Room @roomNumber
+
+                            </span>
+
+
+                            <span>
+
+                                <i class="bi bi-grid-3x3-gap"></i>
+
+                                Bed @bedNumber
+
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="stay-type">
+
+                    @if (isMonthly)
+                    {
+                        <i class="bi bi-calendar-month"></i>
+
+                        <span>
+                            Monthly
+                        </span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-calendar-event"></i>
+
+                        <span>
+                            Daily
+                        </span>
+                    }
+
+                </div>
+
+            </div>
+
+
+
+            <!-- DETAILS -->
+
+            <div class="stay-details">
+
+
+                <!-- START DATE -->
+
+                <div class="stay-detail">
+
+                    <div class="detail-icon">
+
+                        <i class="bi bi-calendar-plus"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span class="detail-label">
+                            Start Date
+                        </span>
+
+
+                        <span class="detail-value">
+
+                            @if (startDate.HasValue)
+                            {
+                                @startDate.Value.ToString("dd MMM yyyy")
+                            }
+                            else
+                            {
+                                <text>-</text>
+                            }
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- END DATE -->
+
+                <div class="stay-detail">
+
+                    <div class="detail-icon yellow">
+
+                        <i class="bi bi-calendar-x"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span class="detail-label">
+
+                            @if (isMonthly)
+                            {
+                                <text>Stay Type</text>
+                            }
+                            else
+                            {
+                                <text>End Date</text>
+                            }
+
+                        </span>
+
+
+                        <span class="detail-value">
+
+                            @if (isMonthly)
+                            {
+                                <text>Monthly</text>
+                            }
+                            else if (endDate.HasValue)
+                            {
+                                @endDate.Value.ToString("dd MMM yyyy")
+                            }
+                            else
+                            {
+                                <text>-</text>
+                            }
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- RENT -->
+
+                <div class="stay-detail">
+
+                    <div class="detail-icon green">
+
+                        <i class="bi bi-currency-rupee"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span class="detail-label">
+
+                            @if (isMonthly)
+                            {
+                                <text>Monthly Rent</text>
+                            }
+                            else
+                            {
+                                <text>Daily Rent</text>
+                            }
+
+                        </span>
+
+
+                        <span class="detail-value">
+
+                            ₹@rentAmount.ToString("N0")
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+
+                <!-- PAYMENT -->
+
+                <div class="stay-detail">
+
+                    <div class="detail-icon purple">
+
+                        <i class="bi bi-credit-card"></i>
+
+                    </div>
+
+
+                    <div>
+
+                        <span class="detail-label">
+
+                            @if (canPayNow)
+                            {
+                                <text>Next Payment</text>
+                            }
+                            else
+                            {
+                                <text>Payment Status</text>
+                            }
+
+                        </span>
+
+
+                        <span class="detail-value @(canPayNow ? "" : "success")">
+
+                            @if (canPayNow)
+                            {
+                                <text>
+                                    ₹@nextPaymentAmount.ToString("N0")
+                                </text>
+                            }
+                            else
+                            {
+                                <text>
+                                    Paid
+                                </text>
+                            }
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <!-- PAYMENT FOOTER -->
+
+            <div class="payment-footer">
+
+                @if (canPayNow)
+                {
+
+                    <div class="payment-status"
+                         style="color:#ad7900;">
+
+                        <i class="bi bi-exclamation-circle-fill"></i>
+
+                        Payment is due
+
+                    </div>
+
+
+                    <a asp-controller="Payment"
+                       asp-action="Create"
+                       asp-route-bookingId="@confirmedBookingId"
+                       class="payment-link">
+
+                        Pay ₹@nextPaymentAmount.ToString("N0")
+
+                        →
+
+                    </a>
+
+                }
+                else
+                {
+
+                    <div class="payment-status">
+
+                        <i class="bi bi-check-circle-fill"></i>
+
+                        Payment is up to date
+
+                    </div>
+
+
+                    <a asp-controller="Payment"
+                       asp-action="History"
+                       class="payment-link">
+
+                        View Payment History →
+
+                    </a>
+
+                }
+
+            </div>
+
+        }
+        else
+        {
+
+            <!-- NO CURRENT STAY -->
+
+            <div class="empty-stay">
+
+                <div class="empty-icon">
+
+                    <i class="bi bi-house-door"></i>
+
+                </div>
+
+
+                <h4>
+                    No Current Stay
+                </h4>
+
+
+                <p>
+
+                    You don't have an active booking right now.
+                    Find a PG and book your next stay.
+
+                </p>
+
+
+                <a asp-controller="UserPG"
+                   asp-action="Index"
+                   class="empty-button">
+
+                    <i class="bi bi-search"></i>
+
+                    Find a PG
+
+                </a>
+
+            </div>
+
+        }
+
+    </section>
+
+
+
+    <!-- =====================================================
+         PAYMENT ALERT
+    ===================================================== -->
+    @if (hasCurrentStay && canPayNow)
+    {
+
+        <div class="payment-alert">
+
+
+            <div class="payment-alert-left">
+
+
+                <div class="payment-alert-icon">
+
+                    <i class="bi bi-wallet2"></i>
+
+                </div>
+
+
+                <div>
+
+                    <p class="payment-alert-title">
+                        Payment due
+                    </p>
+
+
+                    <p class="payment-alert-text">
+
+                        Your next payment is
+
+                        <strong>
+                            ₹@nextPaymentAmount.ToString("N0")
+                        </strong>
+
+                        @if (nextPaymentDate.HasValue)
+                        {
+                            <text>
+
+                                and is due from
+                                @nextPaymentDate.Value.ToString("dd MMM yyyy").
+
+                            </text>
+                        }
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <a asp-controller="Payment"
+               asp-action="Create"
+               asp-route-bookingId="@confirmedBookingId"
+               class="pay-now-button">
+
+                Pay Now
+
+            </a>
+
+        </div>
+
+    }
+
+
+
+    <!-- =====================================================
+         QUICK ACTIONS
+    ===================================================== -->
+
+    <section class="quick-section">
+
+
+        <div class="section-heading">
+
+            <h3>
+                Quick Actions
+            </h3>
+
+            <span>
+                Manage your PG
+            </span>
+
+        </div>
+
+
+        <div class="quick-grid">
+
+
+            <!-- FIND PG -->
+
+            <a asp-controller="UserPG"
+               asp-action="Index"
+               class="quick-card">
+
+                <div class="quick-icon">
+
+                    <i class="bi bi-search"></i>
+
+                </div>
+
+
+                <div class="quick-content">
+
+                    <h5>
+                        Find a PG
+                    </h5>
+
+                    <p>
+                        Search and explore approved PG accommodations.
+                    </p>
+
+                </div>
+
+
+                <i class="bi bi-arrow-up-right quick-arrow"></i>
+
+            </a>
+
+
+
+            <!-- BOOKINGS -->
+
+            <a asp-controller="Booking"
+               asp-action="MyBookings"
+               class="quick-card">
+
+                <div class="quick-icon">
+
+                    <i class="bi bi-calendar-check"></i>
+
+                </div>
+
+
+                <div class="quick-content">
+
+                    <h5>
+                        My Bookings
+                    </h5>
+
+                    <p>
+                        View bookings and track their approval status.
+                    </p>
+
+                </div>
+
+
+                <i class="bi bi-arrow-up-right quick-arrow"></i>
+
+            </a>
+
+
+
+            <!-- PAYMENTS -->
+
+            <a asp-controller="Payment"
+               asp-action="History"
+               class="quick-card">
+
+                <div class="quick-icon">
+
+                    <i class="bi bi-credit-card"></i>
+
+                </div>
+
+
+                <div class="quick-content">
+
+                    <h5>
+                        Payments
+                    </h5>
+
+                    <p>
+                        View payment history and transaction receipts.
+                    </p>
+
+                </div>
+
+
+                <i class="bi bi-arrow-up-right quick-arrow"></i>
+
+            </a>
+
+
+
+            <!-- FOOD MENU -->
+
+            <a asp-controller="FoodMenu"
+               asp-action="Index"
+               class="quick-card">
+
+                <div class="quick-icon">
+
+                    <i class="bi bi-egg-fried"></i>
+
+                </div>
+
+
+                <div class="quick-content">
+
+                    <h5>
+                        Food Menu
+                    </h5>
+
+                    <p>
+                        Check breakfast, lunch, dinner and snacks.
+                    </p>
+
+                </div>
+
+
+                <i class="bi bi-arrow-up-right quick-arrow"></i>
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =====================================================
+         FOOTER
+    ===================================================== -->
+
+    <div class="dashboard-footer">
+
+        © @DateTime.Now.Year PG Manager ·
+        Your stay, simplified.
+
+    </div>
+
+</main>
